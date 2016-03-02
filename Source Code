@@ -1,0 +1,4586 @@
+#include<conio.h>
+#include<string.h>
+#include<stdio.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <direct.h>
+#include<dir.h>
+char *pch;
+char temp[100],temp1[100],temp2[100];
+char parts[100][100];
+int i,count,t;
+char usedatabase[100];
+char statement[100];  
+int del1,del2;
+void create_database_syntax(char *a);
+int database_exist(char *name);
+int table_exist(char *tname);
+void create_database_validate(char *databasename);
+void create_table_syntax(char *abc);
+void create_table_validate(char *tablename,char columns[100][100],int numbercolumns);
+int name_duplicate_check(char a[100][100],char b[100],int c); 
+int name_keywords(char *b); 
+void use(char *b);
+void drop(char *a);
+void drop_database_validate(char *databasename);
+void alter(char *a);
+int name_val(char *a,int len);
+int type_val(char *a);
+void describe_validate(char *table);
+void describe_syntax(char *statement);
+void select_syntax(char *statement);
+void delete_syntax(char *statement);
+void update_syntax(char *statement);
+void logo();
+int bracesvalid(char *statement);
+void removespaces(char *statement);
+void insertsyntax(char *statement);
+void show_tables();
+void show_databases();
+void database_g();
+void  help();
+void backupsyntax(char *statementaux);
+void restoresyntax(char *statementaux);
+void delete_syntax(char *statement);
+void man(char *statement);
+void updatesyntax(char *statement1);
+void preparetovalidate(char *statementaux);
+void selectsyntax(char *statementaux);
+void delay1(int d);
+void head_tb(char *a);
+int main()
+{
+     char statement[100],statement1[100];
+     char parts[100][100];
+     int count,type;
+     char ch;
+     del1=50000000;
+     del2=10000000;
+     logo();
+     delay1(5000000);
+     printf("\n\n\n\n\t\t\t     START QUERYING NOW !!!");
+     getch();
+    do
+    {
+     system("cls");
+     int i,z;
+     printf("\n\n\nYeSQL>");
+     fflush(stdin);
+     gets(statement1);
+     if(strcmp(statement1,"select * from tab;")==0)
+     {
+                strcpy(statement1,"show tables;");
+     }
+     for(i=0;i<strlen(statement1);i++)
+     {
+             if(statement1[i]>=65&&statement1[i]<=90)
+             statement1[i]=statement1[i]+32;
+     }
+     i=0;
+     if(strcmp(statement1,"exit;")==0)
+     {
+      exit(0);                                 
+     }
+     strcpy(statement,statement1);   
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ||,");
+     }
+     if(strcmp(parts[0],"create")==0) type=1;
+     else if(strcmp(parts[0],"drop")==0) type=2;
+     else if(strcmp(parts[0],"alter")==0) type=3;
+     else if(strcmp(parts[0],"use")==0) type=4;
+     else if(strcmp(parts[0],"describe")==0) type=5;
+     else if(strcmp(parts[0],"delete")==0) type=6;
+     else if(strcmp(parts[0],"update")==0) type=7; 
+     else if(strcmp(parts[0],"select")==0) type=8;
+     else if(strcmp(parts[0],"insert")==0) type=9;
+     else if(strcmp(parts[0],"quit")==0) type=10;
+     else if(strcmp(parts[0],"show")==0) type=11;  
+     else if(strcmp(parts[0],"help;")==0) type=12;  
+     else if(strcmp(parts[0],"backup")==0) type=13;
+     else if(strcmp(parts[0],"restore")==0) type=14;
+     else if(strcmp(parts[0],"delete")==0) type=15;
+     else if(strcmp(parts[0],"man")==0) type=16;  
+     else type=99;
+        switch(type)
+        {
+          case 1: //create_database_syntax table
+                  if(strcmp(parts[1],"database")==0)
+                  {
+                      create_database_syntax(statement1);
+                  }
+                  else if(strcmp(parts[1],"table")==0)
+                  {
+                      create_table_syntax(statement1);
+                  }
+                  else
+                  {
+                      printf("\n\nYeSQL Error : Invalid attempt to creation of '%s' (only database/table)",parts[1]);
+                  }                
+                  break;   
+          case 2://drop 
+                 drop(statement1);
+                 break; 
+          case 3://alter 
+                 alter(statement1);
+                 break; 
+          case 4://use
+                 use(statement1);
+                 break; 
+          case 5://describe
+                 describe_syntax(statement1);
+                 break;
+          case 6://delete
+                 delete_syntax(statement1);
+                 break;
+          case 7://update
+                  updatesyntax(statement1);
+                  break;
+          case 8://select
+               z=checkoptimizedversion(statement1);
+               if(z==1)
+               {
+                   preparetovalidate(statement1);
+               }
+               else
+               {
+                   selectsyntax(statement1);
+               }
+                 break; 
+          case 9://insert
+                  if(bracesvalid(statement1)==1)
+                  {
+                   removespaces(statement1);
+                   insertsyntax(statement1);
+                  }
+                 break;  
+          case 10://quit
+                 exit(0);
+                 break;
+          case 11://show query
+                  if(strcmp(parts[1],"databases;")==0)
+                  {
+                      show_databases();
+                  }
+                  else if(strcmp(parts[1],"tables;")==0)
+                  {
+                      show_tables();
+                  }
+                  else if(strcmp(parts[1],"database_g;")==0)
+                  {
+                      database_g();
+                  }
+                  else
+                  {
+                      printf("\n\nYeSQL Error : Invalid use of show !!! (only databases/tables/database_g can be shown)");
+                  }               
+                  break; 
+          case 12://help
+                 help();
+                 break;
+          case 13://backup
+                 backupsyntax(statement1);
+                 break;
+          case 14://restore
+                  restoresyntax(statement1);
+                  break;
+          case 15://delete
+                  delete_syntax(statement);
+                  break;
+          case 16://man
+                  strcpy(temp2,parts[1]);
+                  temp2[strlen(temp2)-1]='\0';
+                  man(temp2);
+                  break;
+          case 99:printf("\n\nYeSQL Error : Invalid operation!!!");
+                   break;
+                                
+          default:
+                  //name_duplicate_check(parts,temp,2);
+                  
+                   printf("\n\nYeSQL Error : Invalid operation!!!");
+                   break;
+                     
+         }
+    // printf("\n\ndo u want to continue(y/n) : ");
+     scanf("%c",&ch);
+     }while(ch!='n');
+     
+}
+
+//delay1
+void delay1(int d)
+{
+     int chumma=0;
+     for(chumma=0;chumma<d;chumma++)
+     {
+          chumma=chumma+0;
+     }
+}
+
+//delay2
+void delay2(int d)
+{
+     int chumma=0;
+     for(chumma=0;chumma<d;chumma++)
+     {
+         chumma=chumma+0;
+     }
+}//logo function
+void logo()
+{
+     int ij,sl;
+     char str1[100];
+     char str2[100];
+     printf("\n\t  .....     .....  .....    ......     .......     .....");
+     delay1(del1);
+     printf("\n\t   ....     ....  .......  ........   .........     ...      ");
+     delay1(del1);
+     printf("\n\t   ....     ....  ..       ..         ..     ..     ...      ");
+     delay1(del1);
+     printf("\n\t   ....     ....  .....    .......    ..  .. ..     ...      ");
+     delay1(del1);
+     printf("\n\t     .........    .....     .......   ..   ....     ...      "); 
+     delay1(del1);
+     printf("\n\t      .......     ..             ..   ..     ...    ...      "); 
+     delay1(del1);
+     printf("\n\t       .....      .......  ........   ...........   ........");
+     delay1(del1);
+     printf("\n\t       .....       .....    ......     .......  ..  ........"); 
+     delay1(del1);
+     printf("\n\t       .....      ");
+     //printf("\n\t       .....      ");
+     delay1(del1); 
+     for(ij=0;ij<42;ij++)
+     {
+          printf("%c",196);
+          //delay2();              
+     }
+     strcpy(str1,".....      THE SQL QUERY PROCESSOR (COMPILER) USING C");
+     sl=strlen(str1);
+     str1[sl]='\0';
+     printf("\n\t       ");
+     for(ij=0;ij<sl;ij++)
+     {
+          printf("%c",str1[ij]);
+          delay2(del2);              
+     }
+     delay1(del1);
+     strcpy(str2,".......     DEPT.OF COMPUTER SCIENCE,CHRIST UNIVERSITY");
+     sl=strlen(str2);
+     str2[sl]='\0';
+     printf("\n\t      ");
+     for(ij=0;ij<sl;ij++)
+     {
+          printf("%c",str2[ij]);
+          delay2(del2);              
+     }
+      
+     delay1(del1); 
+}
+
+//NAME VALIDATION(special charecters and keywords checking)
+int name_val(char *a,int len)
+{
+    if(len==0)
+    {
+    printf("\n\nYeSQL Error :specify the name");
+    return 1;                                       
+    }
+     char *pch1;
+    char keywords[100][10];
+    int i1=0;
+     int j1=0;
+    char statement1[300];
+    strcpy(statement1,"database table create drop alter delete into txt int to YeSQl rename add from column backup restore show describe database_g help man ");
+     pch1 = strtok (statement1," ");
+     while (pch1 != NULL)
+     {
+       strcpy(keywords[i1],pch1);
+       //count=i;
+      //printf("\n%s",keywords[i1]);
+       i1++;
+       pch1 = strtok (NULL," ||,");
+     }
+     
+     strcpy(temp,a); 
+    
+     for(j1=0;j1<len;j1++)
+     {
+             if(temp[j1]<48 || temp[j1]>122)
+             {
+               break;      
+             }
+             else
+             {
+                 if(temp[j1]>57 && temp[j1]<65)
+                 {
+                  break; 
+                  }
+                  else
+                  {
+                   if(temp[j1]>90 && temp[j1]<95)
+                   {
+                    break; 
+                   }
+                   else if(temp[j1]>95 && temp[j1]<97)
+                   {
+                        break;
+                    }
+                  }   
+                 }
+             }
+             if(j1==len)
+             {
+                        while(i1>=0)
+                        {
+                                  //  printf("\n  '%s'   %s",temp,keywords[i1]);                 
+                                  if(strcmp(temp,keywords[i1])==0)
+                                  {
+                                          printf("\n\nYeSQL Error : Invalid name !!!('%s' is a keyword in YeSQL)",keywords[i1]);
+                                          return 1;
+                                  }
+                                  i1--;
+                        }
+                        return 0;
+             }
+             else
+             {
+               printf("\n\nYeSQL Error : invalid name!!!! Special charecters (except '_') not allowed");
+              return 1;
+             } 
+}
+
+
+//VALIDATE DATATYPE AND LENGTH
+int type_val(char *a)
+ {
+      //datatype validation
+      int i;
+      int k;
+      strcpy(temp,a);
+      for(i=0;i<3;i++)
+      {
+                      temp1[i]=temp[i];
+      }
+                                                
+      if(strcmp(temp1,"int")==0)
+      {
+                                k=0;
+                                for(i=4;i<6;i++)
+                                {
+                                                temp1[k]=temp[i];
+                                                k++;
+                                }
+                                temp1[k]=' ';
+                                                
+      }
+      else if(strcmp(temp1,"txt")==0)
+      {
+           k=0;
+           for(i=4;i<6;i++)
+           {
+                           temp1[k]=temp[i];
+                           k++;
+           }
+           temp1[k]=' ';
+          
+      }
+      else
+      {
+          printf("\n\nYeSQL Error : Invalid datatype %s (only txt/int)",temp);
+          return 1;
+      }
+      //length checking
+      if(temp[3]!= '(')
+      {
+                   printf("\n\nYeSQL Error : Specify the length of data type");
+                   return 1;
+      }
+      else
+      {
+                   if(temp[4]<48 ||temp[4]>57)
+                   {
+                                 printf("\n\nYeSQL Error : Give degit as length ");
+                                 return 1;
+                   }
+                   else
+                   {
+                                 if(temp[5]!=')')
+                                 {
+                                                 if(temp[5]<48 ||temp[5]>57)
+                                                 {
+                                                               printf("\n\nYeSQL Error : Give degit as length ");
+                                                               return 1;
+                                                 }
+                                                 else
+                                                 {
+                                                               if(temp[6]!=')')
+                                                               { 
+                                                                               printf("\n\nYeSQL Error : Size should'nt go beyond 2 degits(close properly)");
+                                                                               return 1;
+                                                               }
+                                                                    
+                                                 }
+                                 }
+                   }
+                                                
+      }
+      return 0;
+ } 
+//DATABASE EXISTANCE CHECKING
+int database_exist(char *name)
+{
+    struct dirent *dp;
+    int found=0;
+    DIR *dfd = opendir("c:/YeSQL");
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             if(strcmp(name,dp->d_name)==0)
+             {
+                 found=1;
+                 break;
+             }
+        }
+    closedir(dfd);
+    }
+    return found;
+}
+//TABLE EXISTANCE CHECKING
+int table_exist(char *tname)
+{
+    char path[100],tablename[100];
+    struct dirent *dp;
+    int found=0;
+    strcpy(tablename,tname);
+    strcpy(path,"c:/YeSQL/");
+    strcat(path,usedatabase);
+    strcat(path,"/Schemas/");
+    strcat(tablename,".txt");
+    DIR *dfd = opendir(path);
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             if(strcmp(tablename,dp->d_name)==0)
+             {
+                 found=1;
+                 break;
+             }
+        }
+    closedir(dfd);
+    }
+    return found;
+}
+//CREATE DATABASE VALIDATION
+
+void create_database_validate(char *databasename)
+{
+     int dbe;
+     int check;
+     char dirname[100];
+     char dbname[100];
+     check=database_exist(databasename);
+     if(check==1)
+     {
+           printf("\n\nYeSQL Error : '%s' database already exists.",databasename);
+           return;
+     }
+     strcpy(dirname,"c:/YeSQL/");
+     mkdir(dirname);
+     strcat(dirname,databasename);
+     mkdir(dirname);
+     strcat(dirname,"/Schemas");
+     mkdir(dirname);
+     strcpy(dirname,"c:/YeSQL/");
+     mkdir(dirname);
+     strcat(dirname,databasename);
+     mkdir(dirname);
+     strcat(dirname,"/Data");
+     mkdir(dirname);
+      printf("\n\n Success  !! : Database '%s' has been created",databasename);
+}
+//DATABASE CREATE QUERY SYNTAX   
+void create_database_syntax(char *abc)
+{
+    char db_name[100];
+    i=0;
+    count=0;
+    t=0;
+     strcpy(statement,abc); 
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ||,");
+     }   
+     
+     strcpy(temp,parts[count]); 
+     t=strlen(temp);
+     if(temp[t-1]==';')
+     {
+                       if(i==3)
+                       {
+                               strcpy(temp2,parts[2]);
+                               temp2[strlen(temp2)-1]='\0';
+                               if(name_val(temp2,strlen(temp2))!=1)
+                               {
+                                       strcpy(db_name,parts[2]);
+                                       db_name[strlen(db_name)-1]='\0';
+                                       create_database_validate(db_name);
+                                }
+                       }
+                       else
+                       {
+                               printf("\n\nYeSQL Error :statement syntax error !!!");
+                       }
+     }
+     else
+     {
+           printf("\n\nYeSQL Error : ';' missing");
+          
+     }
+}
+//NAME DUPLICATION CHECKING
+int name_duplicate_check(char a[100][100],char *b,int c)
+
+{  
+    int i11;
+    if(c==0)
+     {
+             return 0;
+     }
+     while(c>=0)
+     {         
+                if(strcmp(a[c],b)==0)
+                {
+                                     for(i11=0;i11<=c;i11++)
+                                     {   
+                                     strcpy(a[i11],"invalid");
+                                     }
+                                     printf("\n\n\n");
+                   printf("\n\nYeSQL Error : Invalid column name '%s' !!! (repeated in query)",b);
+                   return 1;
+                }
+                c--;
+     }
+     return 0;
+}
+//CREATE TABLE VALIDATE
+void create_table_validate(char *tablename,char columns[100][100],int numbercolumns)
+{
+     int i;
+     FILE *f1,*f2;
+     char dirname[100];
+     //strcpy(usedatabase,"db1");
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,usedatabase);
+     strcat(dirname,"/Schemas/");
+     strcat(dirname,tablename);
+     strcat(dirname,".txt");
+     f1=fopen(dirname,"w");
+     for(i=0;i<numbercolumns;i++)
+     {
+         fprintf(f1,"%s\n",columns[i]);
+     }
+     fclose(f1);
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,usedatabase);
+     strcat(dirname,"/Data/");
+     strcat(dirname,tablename);
+     strcat(dirname,".txt");
+     f2=fopen(dirname,"w");
+     fclose(f2);
+}
+
+//CREATE TABLE
+void create_table_syntax(char *abc)
+{
+    
+    char tb_name[100];
+    char clm_name[100];
+    char table_content[100][100];
+    int num_columns=0;
+    char duplication[100][100];
+    int dc=0;
+    dc=i=0;
+    count=0;
+    t=0;
+    int kc=0;
+    strcpy(statement,abc); 
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ||,");
+     }   
+     strcpy(temp,parts[count]); 
+     t=strlen(temp);
+     if(temp[t-1]==';')
+     {
+                       if(database_exist(usedatabase)!=1)
+                       {
+                            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+                            return;
+                       }    
+                       if(i<3)
+                        {
+                               printf("\n\nYeSQL Error : Statement incomplete");
+                        }
+                        else if(i==3)//simple creation of tables
+                        {
+                             strcpy(temp2,parts[2]);
+                             temp2[strlen(temp2)-1]='\0';
+                              if(name_val(temp2,strlen(temp2))!=1)
+                              {
+                                          strcpy(temp,parts[2]);
+                                          for(i=0;i<strlen(temp)-1;i++)
+                                          {
+                                             tb_name[i]=temp[i];
+                                          }
+                                          tb_name[i]='\0';
+                                           if(database_exist(usedatabase)!=1)
+                                           {
+                                                 printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+                                                 return;
+                                           }
+                                           if(table_exist(tb_name)==1)
+                                           {
+                                                 printf("\n\nYeSQL Error : This table already exist in the database");
+                                                 return;
+                                           }
+                                           
+                                          printf("\n\n Success  !!!  '%s' table created in '%s' database\n\n Add data members using ALTER command",tb_name,usedatabase);//table name printing
+                              }
+                        }
+                        else if(count>=4)//creation of tables with data values
+                        {
+                            if(table_exist(parts[2])==1)
+                            {
+                               printf("\n\nYeSQL Error : This table already exist in the database");
+                               return;
+                            }
+                            if(name_val(temp,strlen(parts[2]))==1)
+                            {
+                                                
+                                                 return;
+                            }
+                            strcpy(temp,parts[3]);
+                            if(temp[0]!='(')
+                             {
+                                    printf("\n\nYeSQL Error :(  missing for column specification");
+                                    return;
+                             }
+                             else
+                             {
+                                 //datatype checking
+                                 int j=4;
+                                 int t1=0;
+                                 int k;
+                                 dc=0;
+                                 strcpy(duplication[dc],parts[2]);
+                                 dc++;
+                                 while(j<=count)
+                                 {
+                                               //column name validation
+                                                 if(j-1==3)//ignore first '('
+                                                 {
+                                                                    char valid[10];
+                                                                    char valid1[10];
+                                                                    strcpy(valid,parts[j-1]);
+                                                                    for(i=0;i<strlen(valid);i++)
+                                                                    {
+                                                                          if(valid[i]!='(')
+                                                                          {
+                                                                          valid1[t1]=valid[i];
+                                                                          t1++;
+                                                                          }
+                                                                    }
+                                                       valid1[t1]='\0';
+                                                       strcpy(temp,valid1);
+                                                 }
+                                                 else
+                                                 {
+                                                 strcpy(temp,parts[j-1]);
+                                                 }
+                                                 t1=0;
+                                                 strcpy(clm_name,temp);
+                                                 if(name_val(temp,strlen(temp))==1)
+                                                 {
+                                                   t1++;
+                                                   break;
+                                                 }
+                                                 if(name_duplicate_check(duplication,clm_name,dc)==1)
+                                                 { 
+                                                   return;
+                                                 }   
+                                                 strcpy(duplication[dc],clm_name);
+                                                 dc++;                                           
+                                                 
+                                                //datatype validation
+                                                
+                                                if(type_val(parts[j])==1)
+                                                {
+                                                   t1++;
+                                                   break;
+                                                }
+                                                else//print tokens
+                                                {
+                                                    strcpy(temp,parts[j]);
+                                                    for(i=0;i<3;i++)
+                                                    {
+                                                                   temp1[i]=temp[i];
+                                                    }
+                                                    k=0;
+                                                    for(i=4;i<6;i++)
+                                                    {               if(temp[i]!=')')
+                                                                    {
+                                                                    temp2[k]=temp[i];
+                                                                    k++;
+                                                                    }
+                                                    }
+                                                    temp2[k]='\0';
+                                                    
+                                                    strcpy(table_content[num_columns],clm_name);
+                                                    strcat(table_content[num_columns],"-");
+                                                    strcat(table_content[num_columns],temp1);
+                                                    strcat(table_content[num_columns],"-");
+                                                    strcat(table_content[num_columns],temp2);
+                                                    
+                                               }  
+                                           //if(parts[j+1]  
+                                           if(strcmp(parts[j+1],"pk")==0 || strcmp(parts[j+1],"fk")==0) 
+                                           { 
+                                               strcat(table_content[num_columns],"-"); 
+                                               strcat(table_content[num_columns],"PK");
+                                                         
+                                               j=j+1;
+                                               kc++;
+                                           }   
+                                           num_columns++;
+                                          j=j+2;
+                                     }                  
+                                     // ')' checking 
+                                     strcpy(temp,parts[count]); 
+                                     t=strlen(temp);
+                                         if(temp[t-2]!=')')
+                                         {
+                                                 
+                                                  printf("\n\nYeSQL Error : ')' missing");
+                                                  return;
+                                         }
+                                         else
+                                         {
+                                              if(temp[t-3]!=')')
+                                              {
+                                                                char ke[2];
+                                                                ke[1]=temp[t-3];
+                                                                ke[0]=temp[t-4];
+                                                                ke[2]='\0';
+                                                                if(strcmp(ke,"pk")==0)
+                                                                {
+                                                                    kc++;
+                                                                    if(kc>1)
+                                                                    {
+                                                                             printf("\n\nYeSQL Error : More than one primary "); 
+                                                                             for(i=0;i<=100;i++)
+                                                                             {   
+                                                                                          strcpy(duplication[i],"invalid");
+                                                                             }
+                                                                             return;
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        
+                                                                        if(t1==0)
+                                                                        { 
+                                                                                      strcpy(tb_name,parts[2]);
+                                                                                      printf("\n\n Success  !!! '%s' table has been created",tb_name);
+                                                                                      for(i=0;i<=dc;i++)
+                                                                                      {   
+                                                                                          strcpy(duplication[i],"invalid");
+                                                                                      }
+                                                                                      dc=0;
+                                                                        }
+                                                                    }
+                                                                    
+                                                                }
+                                                                else
+                                                                {
+                                                                    printf("\n\nYeSQL Error : Inproper termination");
+                                                                    return;
+                                                                }
+                                           
+                                              }
+                                              else
+                                              {
+                                                  if(kc>1)
+                                                  {
+                                                             printf("\n\nYeSQL Error : More than one primary key present ");
+                                                             for(i=0;i<=dc;i++)
+                                                             {   
+                                                                                          strcpy(duplication[100],"invalid");
+                                                             }
+                                                             return; 
+                                                  }
+                                                  else
+                                                  {
+                                                             if(t1==0)
+                                                             { 
+                                                                      
+                                                                        strcpy(tb_name,parts[2]);       
+                                                                        printf("\n\n Success  !!! '%s' table has been created",tb_name);
+                                                                        for(i=0;i<=dc;i++)
+                                                                        {   
+                                                                            strcpy(duplication[i],"invalid");
+                                                                        }
+                                                             }
+                                                  }
+                                              }
+                                              
+                                         }
+                              }
+                        }
+                        else 
+                        {
+                                         printf("\n\nYeSQL Error : Syntax error!!! (invalid columns)");
+                                              
+                        }
+    }
+     else
+     {
+           printf("\n\nYeSQL Error : ';' missing");
+          
+     }
+     create_table_validate(tb_name,table_content,num_columns+1);
+     
+     
+      
+}
+//END OF  QUERY
+
+//DROP DATABASE VALIDATE
+void drop_database_validate(char *databasename)
+{
+     int dbe;
+     int check;
+     char dirname[100];
+     char dbname[100];
+     check=database_exist(databasename);
+     if(check==0)
+     {
+           printf("\n\nYeSQL Error : Database name does not exist.");
+            return;
+     }
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,databasename);
+     strcat(dirname,"/Schemas");
+     rmdir(dirname);
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,databasename);
+     strcat(dirname,"/Data");
+     rmdir(dirname);
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,databasename);
+     dbe=rmdir(dirname);
+     if(dbe!=0)
+     {
+        printf("\n\nYeSQL Error : tables has to be deleted first.");
+        return;
+     }
+     else
+     {
+         printf("\n\n Success  !!! '%s' database has been removed",temp);
+     }
+}
+void droptable(char *tablename)
+{
+     char path[100];
+     int i;
+     strcpy(path,"c:/YeSQL/");
+     strcat(path,usedatabase);
+     strcat(path,"/Schemas/");
+     strcat(path,tablename);
+     strcat(path,".txt");
+     i=remove(path);
+     if(i==0)
+     {
+         strcpy(path,"c:/YeSQL/");
+         strcat(path,usedatabase);
+         strcat(path,"/Data/");
+         strcat(path,tablename);
+         strcat(path,".txt");
+         remove(path);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : No such table exists.");
+         return;
+     }
+     printf("\n\n Success  !! : Table '%s'  Success fully deleted.",tablename);
+}
+//DROP DATABASE AND TABLE
+void drop(char *abc)
+{
+    i=0;
+    count=0;
+    t=0; 
+     strcpy(statement,abc); 
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ||,");
+     }   
+     strcpy(temp,parts[count]); 
+     t=strlen(temp);
+     if(temp[t-1]==';')
+     {
+              //drop table
+                if(strcmp(parts[1],"table")==0)
+                  {
+                       if(i==3)
+                       {
+                               strcpy(temp2,parts[2]);
+                               temp2[strlen(temp2)-1]='\0';
+                               droptable(temp2);
+                               //ADD TOKONIZATION CODE
+                       }
+                       else
+                       {
+                               printf("\n\nYeSQL Error :invalid statement!!!");
+                               
+                       }
+                  }
+                  //drop databse
+                  else if(strcmp(parts[1],"database")==0)
+                  {
+                       if(i==3)
+                       {
+                               strcpy(temp,parts[2]);
+                               temp[strlen(temp)-1]='\0';
+                                drop_database_validate(temp);
+                       }
+                       else
+                       {
+                               printf("\n\nYeSQL Error : invalid statement!!! (follow correct the format)");
+                              
+                       }
+                  }
+                  else
+                  {
+                         printf("\n\nYeSQL Error : Invalid statement!!! (you can drop only 'table' or 'databse') ");
+                  }
+               }
+               else
+               {
+                    printf("\n\nYeSQL Error : ';' missing");
+               }
+}//END OF DROP COMMAND
+
+
+//rename table
+void altertablerename(char *oldtn,char *newtn)
+{
+     char path[100],pathnew[100];
+     int i;
+     strcpy(path,"c:/YeSQL/");
+     strcat(path,usedatabase);
+     strcat(path,"/Schemas/");
+     strcat(path,oldtn);
+     strcat(path,".txt");
+     strcpy(pathnew,"c:/YeSQL/");
+     strcat(pathnew,usedatabase);
+     strcat(pathnew,"/Schemas/");
+     strcat(pathnew,newtn);
+     strcat(pathnew,".txt");
+     
+     i=rename(path,pathnew);
+     if(i==0)
+     {
+             strcpy(path,"c:/YeSQL/");
+             strcat(path,usedatabase);
+             strcat(path,"/Data/");
+             strcat(path,oldtn);
+             strcat(path,".txt");
+             strcpy(pathnew,"c:/YeSQL/");
+             strcat(pathnew,usedatabase);
+             strcat(pathnew,"/Data/");
+             strcat(pathnew,newtn);
+             strcat(pathnew,".txt");
+             rename(path,pathnew);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : No such table exists.");
+         return;
+     }
+}
+void col_exist(char *tablename,char *b)
+{
+}
+//add column
+void add_column(char *tablename,char *b)
+{
+     int i11,iw;
+     FILE *f1,*f2,*tab,*f3;
+     char dirname[100];
+     char tb[100],t[100];
+     char *p;
+     char columns[100][100],str[100];
+     int nc;
+     strcpy(t,b);
+     //strcpy(usedatabase,"db1");
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,usedatabase);
+     strcat(dirname,"/Schemas/");
+     strcat(dirname,tablename);
+     strcat(dirname,".txt");
+     //check duplication
+     p= strtok(b,"-");
+     if((f3=fopen(dirname,"r")))
+     {
+         iw=0;
+         while(!feof(f3))
+         {
+             fscanf(f3,"%s",str);
+             pch= strtok(str,"-");
+             if(strcmp(pch,p)==0)
+             {
+               iw=999;
+             }                               
+         }
+         fclose(f3);
+     }
+
+     //add
+     if(iw==999)
+     {
+                 pch= strtok(b,"-");
+                printf("\n\nYeSQL Error : The column '%s' is already in table '%s'",pch,tablename);
+                return;
+     }
+     f1=fopen(dirname,"a");
+     fprintf(f1,"%s\n",t);
+     fclose(f1);
+     
+     strcpy(tb,"c:/YeSQl/");
+     strcat(tb,usedatabase);
+     strcat(tb,"/Data/");
+     strcat(tb,tablename);
+     strcat(tb,".txt");
+     if((tab=fopen(tb,"r")))
+     {
+         nc=0;
+         while(!feof(tab))
+         {
+             fscanf(tab,"%s",columns[nc]);
+             strcat(columns[nc],"-NULL");
+             nc++; 
+                               
+         }
+         fclose(tab);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : file coudnt open!!!");
+         return;
+     }
+    
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,usedatabase);
+     strcat(dirname,"/Data/");
+     strcat(dirname,"temp");
+     strcat(dirname,".txt");
+     f1=fopen(dirname,"w");
+     fprintf(f1,"");
+     fclose(f1);
+     f1=fopen(dirname,"a");
+     for(i11=0;i11<nc-1;i11++)
+     {
+          
+          fprintf(f1,"%s\n",columns[i11]);
+            
+     }  
+     fclose(f1);                   
+     remove(tb);
+     rename(dirname,tb);
+     printf("\n\n Success  !! : '%s' has been added to '%s'",b,tablename);
+}
+//remove column from data field
+void remove_col(char *name,int cc)
+{
+     char tablename[100];
+     char statement[100];
+     FILE *tab,*f1,*f2;
+     char *pch1;
+     int ns,ii,i9,i21=0,i1,pk;
+     char str[100],columns[100][100];
+     char dirname[100],tb[100],tt[100];
+     
+     //write file
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,usedatabase);
+     strcat(dirname,"/Data/");
+     strcat(dirname,"temp");
+     strcat(dirname,".txt");
+     f1=fopen(dirname,"w");
+     fprintf(f1,"");
+     fclose(f1);
+
+     //read
+     strcpy(tb,"c:/YeSQL/");
+     strcat(tb,usedatabase);
+     strcat(tb,"/Data/");
+     strcat(tb,name);
+     strcat(tb,".txt");
+     if((tab=fopen(tb,"r")))
+     {
+         ns=0;
+         while(!feof(tab))
+         {
+             fscanf(tab,"%s",columns[ns]);
+             ns++;
+             /*strcpy(temp2,columns[ns]);
+             pch1= strtok(temp2,"-");
+             while (pch1 != NULL)
+             {
+                pch1 = strtok (NULL,"-");
+                strcpy(tt,pch1);
+             }
+             if(strcmp(tt,"PK")!=0)
+             {
+             ns++;
+             }  */                
+         }
+         fclose(tab);
+     }   
+     
+     f1=fopen(dirname,"a");
+     for(ii=0;ii<ns-1;ii++)
+     {
+           strcpy(statement,columns[ii]);
+           pch1= strtok(statement,"-");
+           i9=0;
+           strcpy(str,"");
+           while (pch1 != NULL)
+           {
+               i9++;     
+               if(i9!=cc)
+               {
+                  
+                  strcat(str,pch1);
+                  strcat(str,"-");
+               }
+                pch1 = strtok (NULL,"-");
+               
+           }
+           str[strlen(str)-1]='\0';          
+           fprintf(f1,"%s\n",str);        
+     }
+     fclose(f1); 
+     remove(tb);
+     rename(dirname,tb);
+     
+}
+//drop column
+void drop_column(char *table,char *b)
+{
+     char tablename[100];
+     char statement[100];
+     FILE *tab,*f1,*f2;
+     int ncolumns,i12,i9,i21=0,cc=0,l;
+     char str[100],columns[100][100];
+     char dirname[100];
+     //write file
+     strcpy(dirname,"c:/YeSQL/");
+     strcat(dirname,usedatabase);
+     strcat(dirname,"/Schemas/");
+     strcat(dirname,"temp");
+     strcat(dirname,".txt");
+     f1=fopen(dirname,"w");
+     fprintf(f1,"");
+     fclose(f1);
+     
+     //read file
+     strcpy(tablename,"c:/YeSQl/");
+     strcat(tablename,usedatabase);
+     strcat(tablename,"/Schemas/");
+     strcat(tablename,table);
+     strcat(tablename,".txt");
+     //printf("\n%s\n",tablename);
+     if((tab=fopen(tablename,"r")))
+     {
+         ncolumns=0;
+         while(!feof(tab))
+         {
+             fscanf(tab,"%s",columns[ncolumns]);
+             ncolumns++;                  
+         }
+         fclose(tab);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : Table not available");
+         return;
+     }
+     i12=0;
+     cc=0;
+     while(i12<ncolumns-1)
+     {                         
+            strcpy(statement,columns[i12]);
+            pch = strtok (statement,"-");
+            if(strcmp(pch,b)!=0)
+            {   
+                f1=fopen(dirname,"a");
+                fprintf(f1,"%s\n",columns[i12]);
+                fclose(f1);  
+            }  
+            else
+            {
+                while (pch != NULL)
+                {
+                  strcpy(temp1,pch);    
+                  pch = strtok (NULL,"-");
+                }
+               if(strcmp(temp1,"PK")==0)
+                {
+                   printf("\n\nYeSQL Error : Primary Key column cannot be deleted");
+                   return;
+                }                  
+                cc=i12+1; 
+            }
+            i12++;                   
+     }
+     if(cc==0)
+     {
+              printf("\n\nYeSQL Error : The column name '%s' has not found in table '%s'",b,table);
+              return;
+     }
+     else
+     {
+         printf("\n\n Success  !!! Column '%s' has been removed from '%s' table",b,table);
+     }
+     
+     remove(tablename);
+     rename(dirname,tablename);
+     remove_col(table,cc);
+}
+
+
+//ALTER COMMAND
+void alter(char *abc)
+{
+    i=0;
+    count=0;
+    t=0;
+    char table_name[100];
+     char table_content[100];
+     char type[3];
+     char leng[3];
+     strcpy(statement,abc); 
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ||,");
+     }   
+     
+     strcpy(temp,parts[count]); 
+     t=strlen(temp);
+     if(temp[t-1]==';')
+     {
+                
+                //drop table
+                 if(strcmp(parts[1],"table")==0)
+                  {
+                       if(i==6)
+                       {
+                           //rename table
+                           if(strcmp(parts[3],"rename")==0)
+                           {
+                               if(strcmp(parts[4],"to")==0)
+                               {
+                                    strcpy(temp2,parts[5]);
+                                    temp2[strlen(temp2)-1]='\0';
+                                   if(name_val(temp2,strlen(temp2))!=1)
+                                   {
+                                     strcpy(table_name,temp2);
+                                     if(table_exist(parts[2])!=1)
+                                     {
+                                        printf("\n\nYeSQL Error : no such table name exist");
+                                        return;
+                                     }
+                                        altertablerename(parts[2],table_name);
+                                        printf("\n\n Success  !!! %s renamed to %s",parts[2],table_name);
+                                     
+                                   }
+                               }
+                               else
+                               {
+                                   printf("\n\nYeSQL Error : 'to' keyword missing");
+                               }
+                           }
+                           //drop column (ONE COLUMN AT TIME)
+                           else if(strcmp(parts[3],"drop")==0)
+                           {
+                                
+                                if(strcmp(parts[4],"column")==0)
+                                {
+                                    strcpy(table_name,parts[2]);
+                                    strcpy(temp2,parts[5]);
+                                    temp2[strlen(temp2)-1]='\0';
+                                    drop_column(table_name,temp2);                                    
+                                }
+                                else
+                                {
+                                    printf("\n\nYeSQL Error : syntax error!!! (drop only 'COLUMN')");
+                                }
+                                
+                           }
+                          
+                           else
+                           {
+                               printf("\n\nYeSQL Error :invalid use of alter comand(rename/add/drop)");
+                           }
+                       }
+                       else if(i==7)
+                       {
+                           if(strcmp(parts[3],"add")==0)
+                           {
+                                if(strcmp(parts[4],"column")==0)
+                                {
+                                    if(name_val(parts[5],strlen(parts[5]))!=1)
+                                    {
+                                        char te[8];
+                                        strcpy(te,parts[6]);
+                                        if(strlen(te)<=8)
+                                        {
+                                            for(i=0;i<3;i++)
+                                            {
+                                              type[i]=te[i];
+                                            }
+                                            type[i]='\0';
+                                            if(strlen(te)==7)
+                                            {
+                                            leng[0]=te[4]; 
+                                            leng[1]='\0';
+                                            te[6]='\0';
+                                            }
+                                            else if(strlen(te)==8)
+                                            {
+                                             leng[0]=te[4]; 
+                                             leng[1]=te[5];
+                                             leng[2]='\0';
+                                             te[7]='\0';
+                                            }
+                                            if(type_val(te)!=1)
+                                             {
+                                                if(database_exist(usedatabase)!=1)
+                                                {
+                                                     printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+                                                     return;
+                                                }
+                                                strcpy(table_name,parts[2]);
+                                                strcpy(table_content,parts[5]);
+                                                strcat(table_content,"-");
+                                                strcat(table_content,type);
+                                                strcat(table_content,"-");
+                                                strcat(table_content,leng);
+                                                table_content[strlen(table_content)]='\0';
+                                                add_column(table_name,table_content);
+                                             }
+                                        }
+                                        else
+                                        {
+                                            printf("\n\nYeSQL Error :invalid data type");
+                                        }
+                                        
+                                    }
+                                }
+                                else
+                                {
+                                    printf("\n\nYeSQL Error :invalid adding statement(only 'column' can add)");
+                                }
+                           }
+                           else
+                           {
+                               printf("\n\nYeSQL Error :invalid alter statement(rename/add/drop)");
+                           }
+                       }
+                       else
+                       {
+                           printf("\n\nYeSQL Error :invalid alter statement format!!!"); 
+                       }
+                  }
+                  else
+                  {
+                        printf("\n\nYeSQL Error : you can only alter tables");
+                  }
+     }
+     else
+     {
+           printf("\n\nYeSQL Error : ';' missing");
+     }
+}
+void use(char *abc)
+{
+    char db_name[100];
+    i=0;
+    count=0;
+    t=0;
+     strcpy(statement,abc); 
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ||,");
+     }   
+     
+     strcpy(temp,parts[count]); 
+     t=strlen(temp);
+     if(temp[t-1]==';')
+     {
+                       if(i==2)
+                       {
+                               strcpy(temp2,parts[1]);
+                               temp2[strlen(temp2)-1]='\0';
+                               if(database_exist(temp2)==1)
+                               {
+                                     printf("\n Success  !! : '%s' database selected",temp2);
+                                     strcpy(usedatabase,temp2);
+                               
+                               }
+                               else
+                               {
+                                   printf("\n\nYeSQL Error : no such database exist");
+                               }
+                       }
+                       else
+                       {
+                               printf("\n\nYeSQL Error : statement syntax error !!!");
+                       }
+     }
+     else
+     {
+           printf("\n\nYeSQL Error : ';' missing");
+          
+     }
+}
+void str_spacing(char *name,int k)
+{
+      int l,i,n;
+      l=strlen(name);
+      n=k-l;
+      for(i=0;i<n;i++)
+      {
+                printf(" ");
+      }
+}
+void describe_validate(char *table)
+{
+     char tablename[100];
+     char statement[100];
+     FILE *tab;
+     int ncolumns,i,i9;
+     char str[100],columns[100][100];
+     strcpy(tablename,"c:/YeSQl/");
+     strcat(tablename,usedatabase);
+     strcat(tablename,"/Schemas/");
+     strcat(tablename,table);
+     strcat(tablename,".txt");
+     if((tab=fopen(tablename,"r")))
+     {
+         ncolumns=0;
+        while(!feof(tab))
+         {
+             fscanf(tab,"%s",columns[ncolumns]);
+             ncolumns++;
+         }
+         fclose(tab);
+         if(ncolumns<=1)
+         {
+                        printf("\n\nSorry !!! : empty table!!!");
+                        return;
+         }
+         head_tb(table);
+         printf("\n\n\t -------------------------------------------------------------");
+         printf("\n\t|  FIELD NAME           |  DATA TYPE |  LENGTH  | PRIMARY KEY |");  
+         printf("\n\t|-----------------------|------------|----------|-------------|");
+         
+         for(i=0;i<ncolumns-1;i++)
+         {
+            
+             printf("\n\t|");
+             strcpy(statement,columns[i]); 
+             pch = strtok (statement,"-");
+             i9=0;
+             while (pch != NULL)
+             {
+                   printf("  %s",pch);
+                   if(i9==0)
+                   {
+                    str_spacing(pch,21);
+                    printf("|");
+                   }
+                   else if(i9==1)
+                   {
+                    printf("       |");
+                   }
+                   else if(i9==2)
+                   {
+                       printf("      |");
+                   }
+                   else
+                   {
+                      str_spacing(pch,11);
+                    printf("|");
+                   }
+                   i9++;
+                   pch = strtok (NULL,"-");
+             }   
+             if(i9==3)
+             printf("             |");
+              printf("\n\t|                       |            |          |             | ");
+     
+         }         
+         printf("\n\t -------------------------------------------------------------");
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : Content not available");
+     }
+}
+void describe_syntax(char *statement)
+{
+
+     int i=0;
+     char *pch,parts[100][100];
+     char statementaux[100],tablename[100];
+     //strcpy(statement,statementaux);
+      if(database_exist(usedatabase)!=1)
+      {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+      }
+     if(statement[strlen(statement)-1]!=';')
+     {
+          printf("\n\nYeSQL Error : invalid termination");
+          return;
+     }
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       i++;
+       pch = strtok (NULL, " ");
+     }
+     if(strlen(parts[1])==1)
+     {
+         printf("\n\nYeSQL Error : no table name specified");
+         return;
+     }
+     if(i>2)
+     {
+         printf("\n\nYeSQL Error : invalid statement.");   
+         return;
+     }
+     strcpy(tablename,parts[1]);
+     tablename[strlen(tablename)-1]='\0';
+     describe_validate(tablename);
+     
+}
+//END OF DESCRIBE CODE
+
+//INSERTION CODE STARTS
+
+int isTxt(char *str)
+{
+    return 1;
+}
+int isInt(char *str)
+{
+    int i;
+    if(strcmp(str,"NULL")==0)
+    {
+        return 1;
+    }
+    for(i=0;i<strlen(str);i++)
+    {
+        if(isalpha(str[i]))
+        {
+            printf("\n\nYeSQL Error : Integer type expected : %s",str);
+            return 0;
+        }
+    }
+    return 1;
+}
+int checkLength(char *str,int i)
+{
+    
+    if(strlen(str)>i)
+    {
+        printf("\n\nYeSQL Error : Length exceeded %d: ",i);
+        return 0;
+    }
+    return 1;
+}
+int isPK(char *str, int i,char *tablename)
+{
+    char table[100],strin[100],*pch,parts[100][100];
+    FILE *t;
+    int j;
+    if(strcmp(str,"NULL")==0)
+    {
+        printf("\n\nYeSQL Error : Primary key cannot be null.");
+        return 0;
+    }
+    strcpy(table,"c:/YeSQL/");
+    strcat(table,usedatabase);
+    strcat(table,"/Data/");
+    strcat(table,tablename);
+    strcat(table,".txt");
+    t=fopen(table,"r");
+    while(!feof(t))
+    {
+         fscanf(t,"%s",strin);
+         pch = strtok (strin,"-");
+         j=0;
+         while (pch != NULL)
+         {
+             strcpy(parts[j],pch);
+             j++;
+             pch = strtok (NULL, "-");
+         }
+         if(strcmp(parts[i],str)==0)
+         {
+             fclose(t);
+             printf("\n\nYeSQL Error : primary key duplication");
+             return 0;
+         }
+    }
+    fclose(t);
+    return 1;
+}
+void insertvalidation1(char cols[100][100],int ncols,char values[100][100],int nvalues,char *tablename)
+{
+     int columncount;
+     char *pch,parts[100][100],tuple[1000];
+     int i,j,k,a,b;
+     FILE *f;
+     FILE *finsert;
+     int found;
+     char actualcolumnnames[100][100],valuestowrite[100][100];
+     char table[100],str[100],columns[100][100];
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+         columncount=0;
+         while(!feof(f))
+         {
+             fscanf(f,"%s",str);
+             strcpy(columns[columncount],str);
+             columncount++;
+         }
+         columncount--;
+         fclose(f);
+         
+         // Extracting column names
+         for(i=0;i<columncount;i++)
+         {
+             j=0;
+             while(columns[i][j]!='-' && columns[i][j]!='\0')
+             {
+                  actualcolumnnames[i][j]=columns[i][j];
+                  j++;
+             }
+             actualcolumnnames[i][j]='\0';
+         }
+         /*if(ncols!=columncount)
+         {
+              printf("\nYeSQL Error: Number of columns do not match");
+              return;
+         }*/
+         
+         //checking if column names are valid - check in schema files
+         for(i=0;i<ncols;i++)
+         {
+              found=0;
+              for(j=0;j<columncount;j++)
+              {
+                  if(strcmp(cols[i],actualcolumnnames[j])==0)
+                  {
+                     found=1;
+                  }
+              }
+              if(found==0)
+              {
+                  printf("\n\nYeSQL Error: Invalid column name - %s",cols[i]);
+                  return;
+              }
+         }
+         // Order values according to schema
+         k=0;
+         for(i=0;i<columncount;i++)
+         {
+              found=0;
+              for(j=0;j<ncols;j++)
+              {
+                  if(strcmp(actualcolumnnames[i],cols[j])==0)
+                  {
+                       strcpy(valuestowrite[k],values[j]);
+                       k++;
+                       found=1;
+                  }
+              }
+              if(found==0)
+              {
+                   strcpy(valuestowrite[k],"NULL");
+                   k++;
+              }
+         }
+         for(i=0;i<k;i++)
+         {
+            // printf("\n\t...%s",valuestowrite[i]);
+         }
+         for(i=0;i<columncount;i++)
+          {
+               strcpy(str,columns[i]);
+               pch = strtok (str,"-");
+               j=0;
+               while (pch != NULL)
+               {
+                 strcpy(parts[j],pch);
+                 j++;
+                 pch = strtok (NULL, "-");
+               }
+               if(strcmp(parts[1],"txt")==0)
+               {
+                   a=isTxt(valuestowrite[i]);
+                   if(a==0)
+                   {
+                      return;
+                   }
+                   a=checkLength(valuestowrite[i],atoi(parts[2]));
+                   if(a==0)
+                   {
+                      return;
+                   }
+                   if(j>3 && strcmp(parts[3],"PK")==0)
+                   {
+                       a=isPK(valuestowrite[i],i,tablename);
+                       if(a==0)
+                       {
+                          return;
+                       }
+                       
+                   }
+               }
+               else if(strcmp(parts[1],"int")==0)
+               {
+                   b=isInt(valuestowrite[i]);
+                   if(b==0)
+                   {
+                      return;
+                   }
+                   b=checkLength(valuestowrite[i],(int)parts[2]);
+                   if(b==0)
+                   {
+                      return;
+                   }
+                   if(j>3 && strcmp(parts[3],"PK")==0)
+                   {
+                       b=isPK(valuestowrite[i],i,tablename);
+                       if(b==0)
+                       {
+                          return;
+                       }
+                       
+                   }
+               }
+          }
+          for(i=0;i<=ncols;i++)
+          {
+              if(i==0)
+              {
+                  strcpy(tuple,valuestowrite[i]);
+                  continue;
+              }
+              if(i==columncount)
+              {
+                   break;
+              }
+              strcat(tuple,"-");
+              strcat(tuple,valuestowrite[i]);
+          }
+          printf("\n\n Success  !!! %s has been added to %s",tuple,tablename);
+          strcpy(table,"c:/YeSQL/");
+          strcat(table,usedatabase);
+          strcat(table,"/Data/");
+          strcat(table,tablename);
+          strcat(table,".txt");
+          finsert=fopen(table,"a");
+          fprintf(finsert,"%s\n",tuple);
+          fclose(finsert);
+     }
+}
+void insertvalidation(char values[100][100],int nvalues,char *tablename)
+{
+     int columncount;
+     char *pch,parts[100][100],tuple[1000];
+     int i,j,a,b;
+     FILE *f;
+     FILE *finsert;
+     char table[100],str[100],columns[100][100];
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+          columncount=0;
+          while(!feof(f))
+          {
+             fscanf(f,"%s",str);
+             strcpy(columns[columncount],str);
+             columncount++;
+          }
+          columncount--;
+          fclose(f);
+          if(nvalues!=columncount)
+          {
+              printf("\n\nYeSQL Error : number of columns and values do not match");
+              return;
+          }
+          
+          for(i=0;i<columncount;i++)
+          {
+               strcpy(str,columns[i]);
+               pch = strtok (str,"-");
+               j=0;
+               while (pch != NULL)
+               {
+                 strcpy(parts[j],pch);
+                 j++;
+                 pch = strtok (NULL, "-");
+               }
+               if(strcmp(parts[1],"txt")==0)
+               {
+                   a=isTxt(values[i]);
+                   if(a==0)
+                   {
+                      return;
+                   }
+                   a=checkLength(values[i],atoi(parts[2]));
+                   if(a==0)
+                   {
+                      return;
+                   }
+                   if(j>3 && strcmp(parts[3],"PK")==0)
+                   {
+                       a=isPK(values[i],i,tablename);
+                       if(a==0)
+                       {
+                          return;
+                       }
+                       
+                   }
+               }
+               else if(strcmp(parts[1],"int")==0)
+               {
+                   b=isInt(values[i]);
+                   if(b==0)
+                   {
+                      return;
+                   }
+                   b=checkLength(values[i],(int)parts[2]);
+                   if(b==0)
+                   {
+                      return;
+                   }
+                   if(j>3 && strcmp(parts[3],"PK")==0)
+                   {
+                       b=isPK(values[i],i,tablename);
+                       if(b==0)
+                       {
+                          return;
+                       }
+                       
+                   }
+               }
+          }
+          //
+          for(i=0;i<=columncount;i++)
+          {
+              if(i==0)
+              {
+                  strcpy(tuple,values[i]);
+                  continue;
+              }
+              if(i==columncount)
+              {
+                   break;
+              }
+              strcat(tuple,"-");
+              strcat(tuple,values[i]);
+          }
+          printf("\n\n Success  !!! %s has been added to %s",tuple,tablename);
+          strcpy(table,"c:/YeSQL/");
+          strcat(table,usedatabase);
+          strcat(table,"/Data/");
+          strcat(table,tablename);
+          strcat(table,".txt");
+          finsert=fopen(table,"a");
+          fprintf(finsert,"%s\n",tuple);
+          fclose(finsert);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : no such table exist");
+     }
+     
+}
+int bracesvalid(char *statementaux)
+{
+     char str[100];
+     int i,j,br;
+     i=j=br=0;
+     for(i=0;i<strlen(statementaux);i++)
+     {
+         if(statementaux[i]=='(')
+         {
+             br++;
+             if(br>1)
+             {
+                     printf("\n\nYeSQL Error : invalid braces.");
+                     return 0;
+             }
+         }
+         if(statementaux[i]==')')
+         {
+             br--;
+             if(br<0)
+             {
+                     printf("\n\nYeSQL Error : invalid braces.");
+                     return 0;
+             }
+         }
+     }
+     if(br!=0)
+     {
+              printf("\n\nYeSQL Error : invalid braces.");
+              return 0;
+     }
+     return 1;
+}
+void removespaces(char *statementaux)
+{
+     char str[100];
+     int i,j;
+     i=j=0;
+     while(statementaux[i]!='\0')
+     {
+        if(statementaux[i]=='(')
+        {
+            while(statementaux[i]!=')')
+            {
+                if(statementaux[i]==' ')
+                {
+                    i++;
+                    continue;
+                }
+                str[j]=statementaux[i];
+                j++;
+                i++;
+            }
+        }
+        str[j]=statementaux[i];
+        j++;
+        i++;
+     }
+     str[j]='\0';
+     strcpy(statementaux,str);
+}
+void removeleadingcrap(char *lead)
+{
+     int i;
+     for(i=0;i<=(strlen(lead)-1);i++)
+     {
+         lead[i-1]=lead[i];
+     }
+     lead[i-1]='\0';
+}
+void removetrailingcrap(char *trail)
+{
+     int i=0;
+     while(trail[i]!='\0')
+     {
+         if(trail[i]==')')
+         {
+             trail[i]='\0';
+             return;
+         }
+         i++;
+     }
+}
+void removeshit(char *str)
+{
+     int i;
+     if(str[0]=='\'')
+     {
+        if(str[strlen(str)-1]!='\'')
+        {
+            printf("\n\nYeSQL Error: ' missing");
+            return;
+        }
+        else
+        {
+            for(i=0;i<strlen(str);i++)
+            {
+                str[i-1]=str[i];
+            }
+            str[i-2]='\0';
+        }
+     }
+     else
+     {
+         if(str[strlen(str)-1]=='\'')
+         {
+             printf("\n\nYeSQL Error: ' missing");
+             return;
+         }
+     }
+}
+void insertsyntax(char *statementaux)
+{
+     char tablename[10],statement[100],parts[100][100],valueparts[100][100],columnparts[100][100];
+     int nop,k,nov,noc;
+     int j,i;
+     char *pch;
+     if(statementaux[strlen(statementaux)-1]!=';')
+     {
+          printf("\n\nYeSQL  Error : invalid termination.");
+          return;
+     }
+     if(database_exist(usedatabase)!=1)
+     {
+             printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+             return;
+     }
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     //
+     if(strcmp(parts[1],"into")!=0)
+     {
+           printf("YeSQL error : 'into' keyword missing or missplaced");
+           return;
+     }
+     strcpy(tablename,parts[2]);
+     //
+     nov=0;
+     if(strcmp(parts[3],"values")==0)
+     {
+           if(parts[4][0]=='(' && parts[4][strlen(parts[4])-2]==')')
+           {
+              nov=0;
+              pch = strtok (parts[4],",");
+              while (pch != NULL)
+              {
+                  strcpy(valueparts[nov],pch);
+                  nov++;
+                  pch = strtok (NULL, ",");
+              }
+              removeleadingcrap(valueparts[0]);
+              removetrailingcrap(valueparts[nov-1]);
+              for(i=0;i<nov;i++)
+              {// something....
+                  removeshit(valueparts[i]);
+              }
+              insertvalidation(valueparts,nov,tablename);
+           }
+           else
+           {
+               printf("\n\nYeSQL Error : missing braces.");
+               return;
+           }
+     }
+     else
+     {
+         if(parts[3][0]=='(' && parts[3][strlen(parts[3])-1]==')')
+           {
+              noc=0;
+              pch = strtok (parts[3],",");
+              while (pch != NULL)
+              {
+                  strcpy(columnparts[noc],pch);
+                  noc++;
+                  pch = strtok (NULL, ",");
+              }
+              removeleadingcrap(columnparts[0]);
+              removetrailingcrap(columnparts[noc-1]);
+              for(i=0;i<noc;i++)
+              {
+                 // printf("\n\n' %s '",columnparts[i]);
+              }
+              if(strcmp(parts[4],"values")==0)
+              {
+                   if(parts[5][0]=='(' && parts[5][strlen(parts[5])-2]==')')
+                   {
+                    nov=0;
+                    pch = strtok (parts[5],",");
+                    while (pch != NULL)
+                    {
+                        strcpy(valueparts[nov],pch);
+                        nov++;
+                        pch = strtok (NULL, ",");
+                    }
+                    removeleadingcrap(valueparts[0]);
+                    removetrailingcrap(valueparts[nov-1]);
+                    for(i=0;i<nov;i++)
+                    {// something....
+                        removeshit(valueparts[i]);
+                        //printf("\n\t%s",valueparts[i]);
+                    }
+                    //insertvalidation(valueparts,nov,tablename);
+                   }
+                   else
+                   {
+                       printf("\n\nYeSQL Error : missing braces.");
+                       return;
+                   }
+              }
+              else
+              {
+                  printf("\n\nYeSQl Error: statement cannot be recognized.");
+                  return;
+              }
+              //insertvalidation(valueparts,nov,tablename);
+           }
+           else
+           {
+               printf("\n\nYeSQL Error : missing braces.");
+               return;
+           }
+           if(nov==noc)
+           {
+               insertvalidation1(columnparts,noc,valueparts,nov,tablename);    
+           }
+           else
+           {
+               printf("\n\nYeSQL Error : Number of columns and values do not match!");
+               return;
+           }
+     }
+}
+//END OF INSERTION CODE
+
+//DELETE QUERY STARTS
+//function to seperate the equation and validate
+int seperate_equation(char *abc,char a[100],char b[100],char c[3],char d)
+{
+      int i1=0,i2=0,l=0;
+        l=strlen(abc);
+        for(i1=0;i1<l;i1++)
+        {
+            if(d=='s')
+            {
+                if(abc[i1]=='=')
+                break;
+                else
+                a[i1]=abc[i1];
+            }
+            else
+            {
+                if(abc[i1]=='=' || abc[i1]=='<' || abc[i1]=='>')
+                break;
+                else
+                a[i1]=abc[i1];
+            }
+        }
+        if(i1==l)
+        {
+           printf("\n\nYeSQL Error : missing of operator or invalid operator");
+           return 1;
+        }
+        a[i1]='\0';
+        while(i1<l)
+        {
+             i1++;
+             b[i2]=abc[i1];
+             i2++;
+                                         
+        }
+        b[i2]='\0';
+        //data type checking for txt           
+        if(b[0]=='\'')  
+        {
+             i2=strlen(b);
+             if(b[i2-1]=='\'')  
+             {
+                for(i2=0;i2<strlen(b);i2++)
+                {
+                   b[i2]=b[i2+1];
+                }
+                b[i2-2]='\0';                        
+             }
+             else
+             {
+                 printf("\n\nYeSQL Error : in proper value representation ");
+                 return 1;
+             }
+             strcpy(c,"txt");
+        }
+        else //for integer
+        {
+        // if(con_value[i2]
+        i2=strlen(b);
+        for(i1=0;i1<i2;i1++)
+        {
+           if(b[i1]<48 ||b[i1]>57)
+           {
+              printf("\n\nYeSQL Error : not integer value (txt values must inside ' ' )");
+              return 1;
+           }            
+        }
+        strcpy(c,"int");
+      }
+     return 0; 
+}
+
+
+//UPDATE QUERY
+void update_syntax(char *abc)
+{
+    char tb_name[100];
+    char con_column_name[100];
+    char con_value[100];
+    char con_type[3];
+    char set_column_name[100];
+    char set_value[100];
+    char set_type[3];
+    i=0;
+    int l,num_column=0;
+    count=0;
+    t=0;
+    int i1=0,i2=0;
+     strcpy(statement,abc); 
+     pch = strtok (statement," ");
+     while (pch != NULL)
+     {
+       strcpy(parts[i],pch);
+       count=i;
+       i++;
+       pch = strtok (NULL," ");
+     }   
+     if(database_exist(usedatabase)!=1)
+     {
+             printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+             return;
+     }
+     strcpy(temp,parts[count]); 
+     t=strlen(temp);
+     if(temp[t-1]==';')
+     {
+                  if(strcmp(parts[2],"set")==0)
+                  {
+                       if(i==4)
+                       {
+                                strcpy(tb_name,parts[1]);
+                                tb_name[strlen(tb_name)]='\0';
+                                strcpy(temp2,parts[3]);
+                                l=strlen(temp2);
+                                temp2[l-1]='\0';
+                                if(seperate_equation(temp2,set_column_name,set_value,set_type,'s')!=0)
+                                return;
+                                
+                               // printf("\n\nSuccess !!! table name= %s column name = %s  and value = %s  data type= %s",tb_name,set_column_name,set_value,set_type); 
+                       }
+                      else if(i==6)
+                       {       
+                               if(strcmp(parts[4],"where")==0)
+                               {                    
+                                    strcpy(tb_name,parts[1]);
+                                    tb_name[strlen(tb_name)]='\0';
+                                    
+                                    //set value
+                                    strcpy(temp2,parts[3]);
+                                    l=strlen(temp2);
+                                    if(seperate_equation(temp2,set_column_name,set_value,set_type,'s')!=0)
+                                    return;
+                                    
+                                 //   printf("\n\n\n\ttable name= %s  column name = %s  and value = %s  data type= %s",tb_name,set_column_name,set_value,set_type);
+                                    
+                                    //condition
+                                    strcpy(temp2,parts[5]);
+                                    l=strlen(temp2);
+                                    temp2[l-1]='\0';
+                                    if(seperate_equation(temp2,con_column_name,con_value,con_type,'c')!=0)
+                                    return;
+                                   
+                                   // printf("\n\n\n\tcolumn name = %s  and value = %s  data type= %s",con_column_name,con_value,con_type);  
+                               }
+                               else
+                               {
+                                    printf("\n\nYeSQL Error : 'where' keyword missing or missplaced");
+                                    return;   
+                               }       
+                       }
+                       else
+                       {
+                               printf("\n\nYeSQL Error :statement syntax error !!!");
+                       }
+                  }
+                  else
+                  {
+                       printf("\n\nYeSQL Error : 'set' keyword missing or missplaced");
+                       return;
+                  }
+     }
+     else
+     {       
+           printf("\n\nYeSQL Error : ';' missing");
+     }
+}
+
+
+
+ 
+
+//SHOW DATABASE
+void show_databases()
+{
+    struct dirent *dp;
+    char database[50];
+    DIR *dfd = opendir("c:/YeSQL");
+    printf("\n\n\n\t\t ---------------------------");
+    printf("\n\t\t|      LIST OF DATABASE     |");
+    printf("\n\t\t|---------------------------|");
+    
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             strcpy(database,dp->d_name);
+             if(database[0]=='.'||(strcmp(database,"credits.txt")==0)||(strcmp(database,"optimizer.txt")==0))
+             {
+                 continue;
+             }
+             printf("\n\t\t|   %s",database);
+              str_spacing(database,24);
+             printf("|");
+        }
+    closedir(dfd);
+    
+    printf("\n\t\t ---------------------------");
+    }
+    //return found;
+}
+//SHOW TABLES
+
+void show_tables()
+{
+    struct dirent *dp;
+    int i,ii=0;
+    char tables[50],path[100];
+    if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }   
+    printf("\n\n\n\t\t -----------------------------");
+    printf("\n\t\t|  LIST OF TABLES IN %s",usedatabase);
+    str_spacing(usedatabase,9);
+    printf("|");
+    printf("\n\t\t|-----------------------------|");
+    strcpy(path,"c:/YeSQL/");
+    strcat(path,usedatabase);
+    strcat(path,"/Schemas");
+    DIR *dfd = opendir(path);
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             strcpy(tables,dp->d_name);
+             if(tables[0]=='.')
+             {
+                 continue;
+             }
+             i=0;
+             while(tables[i]!='.')
+             {
+                 
+                 i++;
+             }
+             tables[i]='\0';
+             printf("\n\t\t|     %s",tables);
+             ii++;
+             str_spacing(tables,24);
+             printf("|");
+        }
+    closedir(dfd);
+    printf("\n\t\t -----------------------------");  
+      if(ii==0)
+      {
+          system("CLS");  
+          printf("\n\n\n\n\tNumber of tables in %s is %d !!!",usedatabase,ii);
+      }
+    }
+    //return found;
+}
+//SHOW DATABASE WITH TABLES
+void table_g(char *da)
+{
+
+    struct dirent *dp;
+    int i;
+    strcpy(usedatabase,da);
+    char tables[50],path[100];
+    strcpy(path,"c:/YeSQL/");
+    strcat(path,usedatabase);
+    strcat(path,"/Schemas");
+    DIR *dfd = opendir(path);
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             strcpy(tables,dp->d_name);
+             if(tables[0]=='.')
+             {
+                 continue;
+             }
+             i=0;
+             while(tables[i]!='.')
+             {
+                 
+                 i++;
+             }
+             tables[i]='\0';
+             printf("\n\t\t|    \t\t\t    |      %s",tables);
+             
+             str_spacing(tables,21);
+             printf("|");
+        }
+    closedir(dfd);
+    }
+    //return found;
+}
+void database_g()
+{
+    struct dirent *dp;
+    char database[50];
+    DIR *dfd = opendir("c:/YeSQL");
+    printf("\n\n\n\t\t ------------------------------------------------------");
+    printf("\n\t\t|      DATABASE NAME        |         TABLES            |");
+    printf("\n\t\t|                           |                           |");
+    
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             strcpy(database,dp->d_name);
+              if(database[0]=='.'||(strcmp(database,"credits.txt")==0)||(strcmp(database,"optimizer.txt")==0))
+             {
+                 continue;
+             }
+             printf("\n\t\t|---------------------------|---------------------------|");
+            
+             printf("\n\t\t|   %s",database);
+             str_spacing(database,24);
+             printf("|                           |");
+             table_g(database);            
+             printf("\n\t\t|                           |                           |");           
+        }
+    closedir(dfd);
+    printf("\n\t\t -------------------------------------------------------");
+    }
+    //return found;r
+}
+
+void help()
+{
+     char help[100][10000];
+     int kk;
+     printf("\n\n\n\n\n\t\t\t LIST OF COMMANDS IN YeSQL");
+     printf("\n\t\t\t -------------------------");
+     printf("\n\n\t\t\t\t1.  CREATE");
+     printf("\n\n\t\t\t\t2.  ALTER");
+     printf("\n\n\t\t\t\t3.  DROP");
+     printf("\n\n\t\t\t\t4.  SELECT");
+     printf("\n\n\t\t\t\t5.  SHOW");
+     printf("\n\n\t\t\t\t6.  UPDATE");
+     printf("\n\n\t\t\t\t7.  DELETE");
+     printf("\n\n\t\t\t\t8.  INSERT");
+     printf("\n\n\t\t\t\t10. USE");
+     printf("\n\n\t\t\t\t11. BACKUP");
+     printf("\n\n\t\t\t\t12. RESTORE");
+     printf("\n\n\t\t\t\t13. DESCRIBE");
+     printf("\n\n\t\t\t\t14. EXIT");
+     printf("\n\n\n\t    Visit man pages for syntax and details of each command\n\n\t\t\tMAN Syntax : man <command>;");
+}
+void backupvalidate(char *database)
+{
+     char databasename[100],src[100],dest[100],command[500];
+     if(database_exist(database)==0)
+     {
+         printf("\n\nYeSQL Error: Database %s does not exist",database);
+         return;
+     }
+     strcpy(databasename,database);
+     strcpy(src,"c:\\YeSQL\\");
+     strcat(src,databasename);
+     strcat(src,"\\*");
+     strcpy(dest,"d:\\YeSQLBackUp");
+     strcat(dest,"\\");
+     strcat(dest,databasename);
+     strcpy(command,"xcopy ");
+     strcat(command,src);
+     strcat(command," ");
+     strcat(command,dest);
+     strcat(command," /s /i /q /y");
+     system(command);
+     printf("\n\n Success  !!! Backup for database '%s' has been created",database);
+}
+void backupsyntax(char *statementaux)
+{
+     char statement[100],parts[100][100],database[100];
+     int j,i,nop;
+     char *pch;
+     if(statementaux[strlen(statementaux)-1]!=';')
+     {
+          printf("YeSQL  Error : invalid termination.");
+          return;
+     }
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     if(nop!=3)
+     {
+         printf("\n\nYeSQL Error: Unrecognizable statement.");
+         return;
+     }
+     if(strcmp(parts[1],"database")!=0)
+     {
+         printf("\n\nYeSQL Error: Expected keyword database near %s",parts[0]);
+         return;
+     }
+     if(strlen(parts[2]) == 1)
+     {
+         printf("\n\nYeSQL Error: database name expected.");
+         return;
+     }
+     strcpy(database,parts[2]);
+     database[strlen(database)-1]='\0';
+     backupvalidate(database);
+}
+//RESTORE STARTS
+int databasebackupexist(char *name)
+{
+    struct dirent *dp;
+    int found=0;
+    DIR *dfd = opendir("d:/YeSQLBackUp");
+    if(dfd != NULL)
+    {
+        while((dp = readdir(dfd)) != NULL)
+        {
+             if(strcmp(name,dp->d_name)==0)
+             {
+                 found=1;
+                 break;
+             }
+        }
+    closedir(dfd);
+    }
+    return found;
+}
+void restorevalidate(char *database)
+{
+     char databasename[100],src[100],dest[100],command[500];
+     if(databasebackupexist(database)==0)
+     {
+         printf("\n\nYeSQL Error: A backup of the database %s was not created",database);
+         return;
+     }
+     strcpy(databasename,database);
+     strcpy(src,"d:\\YeSQLBackUp\\");
+     strcat(src,databasename);
+     strcat(src,"\\*");
+     strcpy(dest,"c:\\YeSQL");
+     strcat(dest,"\\");
+     strcat(dest,databasename);
+     strcpy(command,"xcopy ");
+     strcat(command,src);
+     strcat(command," ");
+     strcat(command,dest);
+     strcat(command," /s /i /q /y");
+     system(command);
+     system("cls");
+     printf("\n\n Success  !! : Database '%s' has been Restored.",database);
+     
+}
+void restoresyntax(char *statementaux)
+{
+     char statement[100],parts[100][100],database[100];
+     int j,i,nop;
+     char *pch;
+     if(statementaux[strlen(statementaux)-1]!=';')
+     {
+          printf("\n\nYeSQL  Error : invalid termination.");
+          return;
+     }
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     if(nop!=3)
+     {
+         printf("\n\nYeSQL Error: Unrecognizable statement.");
+         return;
+     }
+     if(strcmp(parts[1],"database")!=0)
+     {
+         printf("\n\nYeSQL Error: Expected keyword database near %s",parts[0]);
+         return;
+     }
+     if(strlen(parts[2]) == 1)
+     {
+         printf("\n\nYeSQL Error: database name expected.");
+         return;
+     }
+     strcpy(database,parts[2]);
+     database[strlen(database)-1]='\0';
+     restorevalidate(database);
+}
+
+
+//DELETE STARTS
+void deletevalidate2(char *tablename,char *cf,char *cv)
+{
+     char table[100],str[100],parts[100][100],tuple[500],tupleparts[100][100];
+     FILE *f;
+     FILE *tmp;
+     int noc,i,take[100],num,j,flag,k,nov,nor,nr;
+     char *pch;
+     int conditionindex;
+    if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+          noc=0;
+         while(!feof(f))
+         {
+            fscanf(f,"%s",str);
+            pch = strtok (str,"-");
+            strcpy(parts[noc],pch);
+            noc++;
+         }
+         fclose(f);
+         noc--;
+         conditionindex=-1;
+         for(i=0;i<noc;i++)
+         {
+             if(strcmp(cf,parts[i])==0)
+             {
+                 conditionindex=i;
+                 break;
+             }
+         }
+         if(conditionindex==-1)
+         {
+             printf("\n\nYeSQL Error: Field not found: %s",cf);
+             return;
+         }
+         fclose(f);
+         strcpy(table,"c:/YeSQL/");
+         strcat(table,usedatabase);
+         strcat(table,"/Data/");
+         strcat(table,tablename);
+         strcat(table,".txt");
+         
+         // write to temp
+         if(f=fopen(table,"r"))
+         {
+              tmp=fopen("temp.txt","w");
+              while(!feof(f))
+              {
+                    nov=0;
+                    fscanf(f,"%s",tuple);
+                    strcpy(str,tuple);
+                    //printf("\n ......%s",str);
+                    pch = strtok (tuple,"-");
+                    while (pch != NULL)
+                    {
+                        strcpy(tupleparts[nov],pch);
+                        nov++;
+                        pch = strtok (NULL, "-");
+                    }
+                    if(strcmp(tupleparts[conditionindex],cv)==0)
+                    {
+                         //printf("\n %s",str);
+                    }
+                    else
+                    {
+                        fprintf(tmp,"%s\n",str);
+                    }
+              }
+              fclose(f);
+              fclose(tmp);
+         }
+         
+         // copy back
+         tmp=fopen("temp.txt","r");
+         nor=0;
+         while(!feof(tmp))
+         {
+              fscanf(f,"%s",str);
+              nor++;
+         }
+         fclose(tmp);
+         nor=nor-2;
+         tmp=fopen("temp.txt","r");
+         f=fopen(table,"w");
+         nr=0;
+         while(!feof(tmp))
+         {
+              if(nr<nor)
+              {
+                 fscanf(tmp,"%s",str);
+                 fprintf(f,"%s\n",str);
+                 nr++;
+              }
+              else
+              {
+                  break;
+              }
+         }
+         fclose(f);
+         fclose(tmp);
+         printf("\n\n Success  !! : The specified content of table '%s' has been deleted",tablename);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error: table %s does not exist.",tablename);
+         return;
+     }
+}
+void deletevalidate1(char *tablename)
+{
+     char table[50],path[100],str[100];
+     FILE *f;
+     int a=0;
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Data/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+          fclose(f);
+     }
+     else
+     {
+         printf("\n\nYeSQl Error: Table %s does not exist",tablename);
+         return;
+     }
+     f=fopen(table,"w");
+     printf("\n\n Success  !! : All content of table '%s' has been deleted",tablename);
+     fclose(f);
+}
+void delete_syntax(char *statementaux)
+{
+     char tablename[10],statement[100],parts[100][100],condition[100];
+     int j,i,nop;
+     char *pch,conditionfield[100],conditionvalue[100];
+     if(statementaux[strlen(statementaux)-1]!=';')
+     {
+          printf("\n\nYeSQL  Error : invalid termination.");
+          return;
+     }
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     if(strcmp(parts[1],"from")!=0)
+     {
+          printf("\n\nYeSQL Error: Expecting keyword - from");
+          return;
+     }
+     //
+     if(nop==3)
+     {
+          strcpy(tablename,parts[2]);
+          tablename[strlen(tablename)-1]='\0';
+          //printf("\n %s",tablename);
+          deletevalidate1(tablename);
+     }
+     else if(nop==5)
+     {
+          strcpy(tablename,parts[2]);
+          if(strcmp(parts[3],"where")!=0)
+          {
+              printf("YeSQL Error: Expecting keyword - where");
+              return;
+          }
+          strcpy(condition,parts[4]);
+          condition[strlen(condition)-1]='\0';
+          pch = strtok (condition,"=");
+          nop=0;
+          while (pch != NULL)
+          {
+               strcpy(parts[nop],pch);
+               nop++;
+               pch = strtok (NULL, "=");
+          }
+          if(nop!=2)
+          {
+               printf("\n\nYeSQL Error: Error in condition");
+               return;
+          }
+          strcpy(conditionfield,parts[0]);
+          strcpy(conditionvalue,parts[1]);
+          deletevalidate2(tablename,conditionfield,conditionvalue);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error: Incomplete statement ");
+         return;
+     }
+}
+
+//MAN COMMAND
+void man(char *abc)
+{
+     char syntax[100][500];
+     char d[100][500];
+     char h[100][200];
+     int kk,start,end;
+     strcpy(syntax[0],"\n\t   create database db_name; ");
+     strcpy(d[0],"\n\t   create database with name db_name");
+     strcpy(h[0],"\n\n  CREATE COMMAND : \n\n\n   1) CREATE DATABASE\n\n");
+     strcpy(syntax[1],"\n\t  create table tb_name;");
+     strcpy(d[1],"create table with name tb_name");
+     strcpy(h[1],"\n\n   2) CREATE TABLE \n\n    i. Type1\n    ........\n");
+     strcpy(syntax[2],"\n\t  create table tb_name (col1 data_type key,col2 data_type......coln \n\t  data_type);");
+     strcpy(d[2],"create table tb_name with column col1,col2,....coln. primary key must \t  be specify during table creation."); 
+     strcpy(h[2],"\n\n    ii. Type2\n    .........\n");
+     strcpy(syntax[3],"\n\t  drop database db_name");
+     strcpy(d[3],"delete the database db_name. ");
+     strcpy(h[3],"\n  DROP COMMAND\n\n    i. database\n    ...........\n");
+     strcpy(syntax[4],"\n\t  drop table tb_name;");
+     strcpy(d[4],"delete the table tb_name. ");
+     strcpy(h[4],"\n\n    ii. Table\n    .........\n");
+     strcpy(syntax[5],"\n\t  insert into tb_name values (val1,val2....valn);");
+     strcpy(d[5],"insert the values for all column (val1,val2...valn) present\n\t  inside table tb_name.");
+     strcpy(h[5],"\n  INSERT COMMAND\n\n    i. Type1\n    ........\n");
+     strcpy(syntax[6],"\n\t  insert into tb_name (col1,col2...colm) values (val1,val2....valm);");
+     strcpy(d[6],"inserting the values (val1,val2....valm) for specified column \n\t  (col1,col2...colm) present inside tb_name");
+     strcpy(h[6],"\n\n    ii. Type2\n    .........\n");
+     strcpy(syntax[7],"\n\t  use db_name;");
+     strcpy(d[7],"specify the database 'db_name' to perType.");
+     strcpy(h[7],"\n  USE COMMAND\n\n");      
+     strcpy(syntax[8],"\n\t  show database;");
+     strcpy(d[8],"list all the database present.");
+     strcpy(h[8],"\n  SHOW COMMAND\n\n    i. database\n    ...........\n");
+     strcpy(syntax[9],"\n\t  show table;");
+     strcpy(d[9],"list all the table present inside the database which is specified \t   \t  by use command.");
+     strcpy(h[9],"\n\n    ii. Table\n    .........\n");
+     strcpy(syntax[10],"\n\t  show database_g ");
+     strcpy(d[10],"it is an additional query which display all database along with \t   \t  its own tables.");
+     strcpy(h[10],"\n\n    iii. database_g\n    ...............\n");
+     strcpy(syntax[11],"\n\t  alter table tb_name add column col_name data_type ");
+      strcpy(d[11],"add the col_name to the table tb_name.");
+       strcpy(h[11],"\n  ALTER COMMAND\n\n    i. add column\n    .............\n"); 
+     strcpy(syntax[12],"\n\t  alter table tb_name drop column col_name");
+      strcpy(d[12],"delete the col_name from the table tb_name.");
+      strcpy(h[12],"\n    ii. Drop column\n    ...............\n"); 
+     strcpy(syntax[13],"\n\t  alter table tb_name1 rename to tb_name2");
+      strcpy(d[13],"the table tb_name1 will rename to tb_name2.");
+      strcpy(h[13],"\n\n    iii. Rename Table\n    .................\n"); 
+     strcpy(syntax[14],"\n\t  describe tb_name");
+      strcpy(d[14],"display the schema of the table name tb_name.");
+       strcpy(h[14],"\n  DESCRIBE COMMAND\n\n"); 
+     strcpy(syntax[15],"\n\t  select * from tb_name");
+      strcpy(d[15],"display all the data inside the table tb_name. ");
+      strcpy(h[15],"\n  SELECT COMMAND\n\n    i. Type1\n    ........\n"); 
+     strcpy(syntax[16],"\n\t  select * from tb_name where 'condition'");
+      strcpy(d[16],"display all the data inside the table tb_name which satisfy the  \t   \t  condition.");
+      strcpy(h[16],"\n\n    ii. Type2\n    .........\n"); 
+     strcpy(syntax[17],"\n\t  select (col1,col2,..coln...) from tb_name ");
+      strcpy(d[17],"display the specified column data inside the table tb_name.");
+      strcpy(h[17],"\n\n    iii. Type3\n    ..........\n"); 
+     strcpy(syntax[18],"\n\t  select (col1,col2,..coln...) from tb_name where 'condition'");
+     strcpy(d[18],"display the specified column data  inside the table tb_name which \t   \t  satisfy the condition.");
+     strcpy(h[18],"\n\n    iv. Type4\n    .........\n"); 
+     strcpy(syntax[19],"\n\t  backup database db_name;");
+     strcpy(d[19]," Backup for database 'db_name' has been created.");
+     strcpy(h[19],"\n  BACKUP COMMAND\n\n");
+     strcpy(syntax[20],"\n\t  restore database db_name;");
+     strcpy(d[20]," Backup of database 'db_name' overwrite the existing database.");
+     strcpy(h[20],"\n  RESTORE COMMAND\n\n"); 
+     strcpy(syntax[21],"\n\t  update tb_name set (col1=val1,col2=val2...coln=valn);");
+      strcpy(d[21],"update the content of table 'tb_name' by the values specified\n               (col1=val1,col2=val2...coln=valn)");
+      strcpy(h[21],"\n  UPDATE COMMAND\n\n\n    i. Type1\n    ........\n"); 
+     strcpy(syntax[22],"\n\t  update tb_name set (col1=val1,col2=val2..coln=valn) where 'condition';");
+      strcpy(d[22],"update the content of table 'tb_name' by the values specified(col1\n          =val1,col2=val2...coln=valn) which satisfy the given condition.");
+      strcpy(h[22],"\n\n    ii. Type2\n    .........\n"); 
+         strcpy(syntax[23],"\n\t  delete  from tb_name;");
+      strcpy(d[23],"delete the entire content inside the table name tb_name ");
+      strcpy(h[23],"\n  DELETE COMMAND\n\n\n    i. Type1\n    ........\n"); 
+     strcpy(syntax[24],"\n\t delete from tb_name where 'condition'; ");
+      strcpy(d[24],"delete the entire content which satisfy the condition in the table\n          name tb_name");
+      strcpy(h[24],"\n\n    ii. Type2\n    .........\n");   
+    if(strcmp(abc,"create")==0)
+    {
+      start=0;
+      end=2;
+    }
+    else if(strcmp(abc,"drop")==0)
+    {
+      start=3;
+      end=4;
+    }
+    else if(strcmp(abc,"insert")==0)
+    {
+         start=5;
+         end=6;
+    }
+    else if(strcmp(abc,"use")==0)
+    {
+         start=7;
+         end=7;
+    }
+    else if(strcmp(abc,"show")==0)
+    {
+         start=8;
+         end=10;
+    }
+    else if(strcmp(abc,"alter")==0)
+    {
+       start=11;
+       end=13;
+    }
+    else if(strcmp(abc,"describe")==0)
+    {
+         start=14;
+         end=14;
+    }
+    else if(strcmp(abc,"select")==0)
+    {
+      start=15;
+      end=18;
+    }
+    else if(strcmp(abc,"backup")==0)
+    {
+      start=19;
+      end=19;
+    }
+    else if(strcmp(abc,"restore")==0)
+    {
+      start=20;
+      end=20;
+    }
+    else if(strcmp(abc,"update")==0)
+    {
+      start=21;
+      end=22;
+    }
+    else if(strcmp(abc,"delete")==0)
+    {
+      start=23;
+      end=24;
+    }
+    else
+    {
+      start=100;
+      end=100;
+    }
+    if(start==100)
+    {
+           printf("\n\n\t\tSORRY !!! NO SUCH COMMAND EXIST ");  
+           return;     
+    }
+    for(kk=start;kk<=end;kk++)
+    {
+     printf("\n\n\n\n%s",h[kk]);
+     printf("\n\tSyntax :");
+     printf("\n\t      %s",syntax[kk]);
+     printf("\n\n\tDescription :");
+     printf("\n\n\t  %s",d[kk]);             
+     }
+}
+
+int isPKupdate(char *str, int i,char *tablename)
+{
+    printf("\n\nYeSQl Error: primary key cannot be changed.");
+    return 0;
+}
+void updatevalidateconditional(char *tablename,char fieldnames[100][100],char fieldvalues[100][100],int nof,char *cf,char *cv)
+{
+     char path[100],str[100],schemacolumns[100][100],parts[100][100],sc[100][100];
+     char newtuple[500];
+     char *pch;
+     int nsc,nop,indices[100],ni,nor,nr;
+     int conditionindex;
+     FILE *f;
+     FILE *tmp;
+     int i,j,k;
+     int found;
+     int a,b,c;//validations
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     //printf("\n\nvalidation");
+     strcpy(path,"c:/YeSQL/");
+     strcat(path,usedatabase);
+     strcat(path,"/Schemas/");
+     strcat(path,tablename);
+     strcat(path,".txt");
+     if(f=fopen(path,"r"))
+     {
+         nsc=0;
+         while(!feof(f))
+         {
+             fscanf(f,"%s",str);
+             strcpy(sc[nsc],str);
+             //printf("\n\n %s",sc[nsc]);
+             pch = strtok (str,"-");
+             strcpy(schemacolumns[nsc],str);
+             nsc++;
+         }
+         fclose(f);
+         nsc--;
+         conditionindex=-1;
+         for(i=0;i<nsc;i++)
+         {
+             if(strcmp(cf,schemacolumns[i])==0)
+             {
+                 conditionindex=i;
+                 break;
+             }
+         }
+         if(conditionindex==-1)
+         {
+             printf("\n\nYeSQL Error: Field not found: %s",cf);
+             return;
+         }
+         ni=0;
+         for(i=0;i<nof;i++)
+         {
+              for(j=0;j<nsc;j++)
+              {
+                    if(strcmp(fieldnames[i],schemacolumns[j])==0)
+                    {
+                           indices[ni]=j;
+                           ni++;
+                           break;
+                    }
+              }
+         }
+         for(i=0;i<ni;i++)
+         {
+                strcpy(str,sc[indices[i]]);
+                //printf("\n\n...%s",str);
+                nop=0;
+                pch = strtok (str,"-");
+                while (pch != NULL)
+                {
+                      strcpy(parts[nop],pch);
+                      //printf("\n\t %s",parts[nop]);
+                      nop++;
+                      pch = strtok (NULL, "-");
+                }
+                if(strcmp(parts[1],"int")==0)
+                {
+                      a=isInt(fieldvalues[i]);
+                      if(a==0)
+                      {
+                         return;
+                      }
+                      a=checkLength(fieldvalues[i],atoi(parts[2]));
+                      if(a==0)
+                      {
+                              return;
+                      }
+                      if(nop>3 && (strcmp(parts[3],"PK")==0))
+                      {
+                             a=isPKupdate(fieldvalues[i],indices[i],tablename);
+                             if(a==0)
+                             {
+                                 return;
+                             }
+                      }
+                }
+                if(strcmp(parts[1],"txt")==0)
+                {
+                      a=isTxt(fieldvalues[i]);
+                      if(a==0)
+                      {
+                         return;
+                      }
+                      a=checkLength(fieldvalues[i],atoi(parts[2]));
+                      if(a==0)
+                      {
+                              return;
+                      }
+                      if(nop>3 && (strcmp(parts[3],"PK")==0))
+                      {
+                             a=isPKupdate(fieldvalues[i],indices[i],tablename);
+                             if(a==0)
+                             {
+                                 return;
+                             }
+                      }
+                }
+                
+         }
+         strcpy(path,"c:/YeSQL/");
+         strcat(path,usedatabase);
+         strcat(path,"/Data/");
+         strcat(path,tablename);
+         strcat(path,".txt");
+         f=fopen(path,"r");
+         tmp=fopen("temp.txt","w");
+         while(!feof(f))
+         {
+              fscanf(f,"%s",str);
+              nop=0;
+              pch = strtok (str,"-");
+              while (pch != NULL)
+              {
+                  strcpy(parts[nop],pch);
+                  //printf("\n%s",parts[nop]);
+                  nop++;
+                  pch = strtok (NULL, "-");
+              }
+              for(i=0;i<ni;i++)
+              {
+                 if(strcmp(parts[conditionindex],cv)==0)
+                 {
+                     strcpy(parts[indices[i]],fieldvalues[i]);
+                 }
+              }
+              for(k=0;k<nop;k++)
+              {
+                  if(k==0)
+                  {
+                      strcpy(newtuple,parts[k]);
+                      continue;
+                  }
+                  strcat(newtuple,"-");
+                  strcat(newtuple,parts[k]);
+              }
+              //printf("\n\n\n%s",newtuple);
+              fprintf(tmp,"%s\n",newtuple);
+         }
+         fclose(tmp);
+         fclose(f);
+         //copy back
+         tmp=fopen("temp.txt","r");
+         nor=0;
+         while(!feof(tmp))
+         {
+              fscanf(f,"%s",str);
+              nor++;
+         }
+         fclose(tmp);
+         nor=nor-2;
+         tmp=fopen("temp.txt","r");
+         f=fopen(path,"w");
+         nr=0;
+         while(!feof(tmp))
+         {
+              if(nr<nor) // fucking shit keeps changing
+              {
+                 fscanf(tmp,"%s",str);
+                 fprintf(f,"%s\n",str);
+                 nr++;
+              }
+              else
+              {
+                  break;
+              }
+         }
+         fclose(f);
+         fclose(tmp);
+     }
+     else
+     {
+         printf("\n\nYeSQl Error: table %s does not exist",tablename);
+         return;
+     }
+     printf("\n\n Success  !! : The content of table '%s' has been updated",tablename);
+}
+void updatevalidate(char *tablename,char fieldnames[100][100],char fieldvalues[100][100],int nof)
+{
+     char path[100],str[100],schemacolumns[100][100],parts[100][100],sc[100][100];
+     char newtuple[500];
+     char *pch;
+     int nsc,nop,indices[100],ni,nor,nr;
+     FILE *f;
+     FILE *tmp;
+     int i,j,k;
+     int found;
+     int a,b,c;//validations
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(path,"c:/YeSQL/");
+     strcat(path,usedatabase);
+     strcat(path,"/Schemas/");
+     strcat(path,tablename);
+     strcat(path,".txt");
+     if(f=fopen(path,"r"))
+     {
+         nsc=0;
+         while(!feof(f))
+         {
+             fscanf(f,"%s",str);
+             strcpy(sc[nsc],str);
+             //printf("\n\n %s",sc[nsc]);
+             pch = strtok (str,"-");
+             strcpy(schemacolumns[nsc],str);
+             nsc++;
+         }
+         fclose(f);
+         nsc--;
+         ni=0;
+         for(i=0;i<nof;i++)
+         {
+              for(j=0;j<nsc;j++)
+              {
+                    if(strcmp(fieldnames[i],schemacolumns[j])==0)
+                    {
+                           indices[ni]=j;
+                           ni++;
+                           break;
+                    }
+              }
+         }
+         for(i=0;i<ni;i++)
+         {
+                strcpy(str,sc[indices[i]]);
+                nop=0;
+                pch = strtok (str,"-");
+                while (pch != NULL)
+                {
+                      strcpy(parts[nop],pch);
+                      nop++;
+                      pch = strtok (NULL, "-");
+                }
+                if(strcmp(parts[1],"int")==0)
+                {
+                      a=isInt(fieldvalues[i]);
+                      if(a==0)
+                      {
+                         return;
+                      }
+                      a=checkLength(fieldvalues[i],atoi(parts[2]));
+                      if(a==0)
+                      {
+                              return;
+                      }
+                      if(nop>3 && (strcmp(parts[3],"PK")==0))
+                      {
+                             a=isPKupdate(fieldvalues[i],indices[i],tablename);
+                             if(a==0)
+                             {
+                                 return;
+                             }
+                      }
+                }
+                if(strcmp(parts[1],"txt")==0)
+                {
+                      a=isTxt(fieldvalues[i]);
+                      if(a==0)
+                      {
+                         return;
+                      }
+                      a=checkLength(fieldvalues[i],atoi(parts[2]));
+                      if(a==0)
+                      {
+                              return;
+                      }
+                      if(nop>3 && (strcmp(parts[3],"PK")==0))
+                      {
+                             a=isPKupdate(fieldvalues[i],indices[i],tablename);
+                             if(a==0)
+                             {
+                                 return;
+                             }
+                      }
+                }
+                
+         }
+         strcpy(path,"c:/YeSQL/");
+         strcat(path,usedatabase);
+         strcat(path,"/Data/");
+         strcat(path,tablename);
+         strcat(path,".txt");
+         f=fopen(path,"r");
+         tmp=fopen("temp.txt","w");
+         while(!feof(f))
+         {
+              fscanf(f,"%s",str);
+              nop=0;
+              pch = strtok (str,"-");
+              while (pch != NULL)
+              {
+                  strcpy(parts[nop],pch);
+                  //printf("\n%s",parts[nop]);
+                  nop++;
+                  pch = strtok (NULL, "-");
+              }
+              for(i=0;i<ni;i++)
+              {
+                   strcpy(parts[indices[i]],fieldvalues[i]);
+              }
+              for(k=0;k<nop;k++)
+              {
+                  if(k==0)
+                  {
+                      strcpy(newtuple,parts[k]);
+                      continue;
+                  }
+                  strcat(newtuple,"-");
+                  strcat(newtuple,parts[k]);
+              }
+              //printf("\n\n\n%s",newtuple);
+              fprintf(tmp,"%s\n",newtuple);
+         }
+         fclose(tmp);
+         fclose(f);
+         //copy back
+         tmp=fopen("temp.txt","r");
+         nor=0;
+         while(!feof(tmp))
+         {
+              fscanf(f,"%s",str);
+              nor++;
+         }
+         fclose(tmp);
+         nor=nor-2;
+         tmp=fopen("temp.txt","r");
+         f=fopen(path,"w");
+         nr=0;
+         while(!feof(tmp))
+         {
+              if(nr<nor) // fucking shit keeps changing
+              {
+                 fscanf(tmp,"%s",str);
+                 fprintf(f,"%s\n",str);
+                 nr++;
+              }
+              else
+              {
+                  break;
+              }
+         }
+         fclose(f);
+         fclose(tmp);
+          printf("\n\n Success  !! : The content of table '%s' has been updated",tablename);
+     }
+     else
+     {
+         printf("\n\nYeSQl Error: Table %s does not exist",tablename);
+         return;
+     }
+}
+void updatesyntax(char *statementaux)
+{
+     char tablename[10],statement[100],parts[100][100],condition[100];
+     int j,i,nop;
+     char *pch,conditionfield[100],conditionvalue[100];
+     char fieldnames[100][100],fieldvalues[100][100],fieldnamesvalues[100],eachfield[100][100];
+     char part[100][100];
+     int nof;
+     if(statementaux[strlen(statementaux)-1]!=';')
+     {
+          printf("\n\nYeSQL  Error : Invalid termination.");
+          return;
+     }
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     strcpy(tablename,parts[1]);
+     if(strcmp(parts[2],"set")!=0)
+     {
+        printf("\n\nYeSQL Error: Expected keyword - set");
+        return;
+     }
+     if(nop==4)
+     {
+        //Extracting field names and field values
+        strcpy(fieldnamesvalues,parts[3]);
+        fieldnamesvalues[strlen(fieldnamesvalues)-1]='\0';
+        //validate ends leading and trailing
+        pch = strtok (fieldnamesvalues,",");
+        nof=0;
+        while (pch != NULL)
+        {
+          strcpy(eachfield[nof],pch);
+          nof++;
+          pch = strtok (NULL, ",");
+        }
+        //removeleadingcrap(eachfield[0]);
+        //printf("\n\n\t\t%s",eachfield[0]);
+        removeleadingcrap(eachfield[0]);
+        removetrailingcrap(eachfield[nof-1]);
+        for(i=0;i<nof;i++)
+        {
+           pch = strtok (eachfield[i],"=");
+           j=0;
+           while (pch != NULL)
+           {
+               strcpy(part[j],pch);
+               j++;
+               pch = strtok (NULL, "=");
+           }
+           if(j!=2)
+           {
+               printf("\n\nYeSQL Error: Error in field %s",eachfield[i]);
+               return;
+           }
+           else
+           {
+               strcpy(fieldnames[i],part[0]);
+               strcpy(fieldvalues[i],part[1]);
+           }
+        }
+        updatevalidate(tablename,fieldnames,fieldvalues,nof);
+     }
+     else if(nop==6)
+     {
+          //Extracting field names and field values
+        strcpy(fieldnamesvalues,parts[3]);
+        //validate ends leading and trailing
+        pch = strtok (fieldnamesvalues,",");
+        nof=0;
+        while (pch != NULL)
+        {
+          strcpy(eachfield[nof],pch);
+          nof++;
+          pch = strtok (NULL, ",");
+        }
+        //removeleadingcrap(eachfield[0]);
+        //printf("\n\n\t\t%s",eachfield[0]);
+        removeleadingcrap(eachfield[0]);
+        removetrailingcrap(eachfield[nof-1]);
+        for(i=0;i<nof;i++)
+        {
+           pch = strtok (eachfield[i],"=");
+           j=0;
+           while (pch != NULL)
+           {
+               strcpy(part[j],pch);
+               j++;
+               pch = strtok (NULL, "=");
+           }
+           if(j!=2)
+           {
+               printf("\n\nYeSQL Error: Error in field %s",eachfield[i]);
+               return;
+           }
+           else
+           {
+               strcpy(fieldnames[i],part[0]);
+               strcpy(fieldvalues[i],part[1]);
+           }
+        }
+        if(strcmp(parts[4],"where")!=0)
+        {
+             printf("\n\nYeSQl Error: Expected keyword where");
+             return;
+        }
+        if(strcmp(parts[5],";")==0)
+        {
+             printf("\n\nYeSQl Error: condition missing");
+             return;
+        }
+        strcpy(condition,parts[5]);
+        condition[strlen(condition)-1]='\0';
+          pch = strtok (condition,"=");
+          nop=0;
+          while (pch != NULL)
+          {
+               strcpy(parts[nop],pch);
+               nop++;
+               pch = strtok (NULL, "=");
+          }
+          if(nop!=2)
+          {
+               printf("\n\nYeSQL Error: Error in condition");
+               return;
+          }
+          strcpy(conditionfield,parts[0]);
+          strcpy(conditionvalue,parts[1]);
+          updatevalidateconditional(tablename,fieldnames,fieldvalues,nof,conditionfield,conditionvalue);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error: Unrecognizable statement");
+         return;
+     }
+}
+
+
+
+
+
+////////
+//SELECT DISPLAY CODE STARTS
+void select_display_data(char *table)
+{
+     char tablename[100];
+     char statement[100];
+     FILE *tab;
+     int ncolumns,i,i9,i21=0;
+     char str[100],columns[100][100];
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(tablename,"c:/YeSQl/");
+     strcat(tablename,usedatabase);
+     strcat(tablename,"/Data/");
+     strcat(tablename,table);
+     strcat(tablename,".txt");
+     //printf("\n%s\n",tablename);
+     if((tab=fopen(tablename,"r")))
+     {
+         ncolumns=0;
+         while(!feof(tab))
+         {
+             fscanf(tab,"%s",columns[ncolumns]);
+             ncolumns++;
+             i21++;
+         }
+         fclose(tab);
+         if(i21>1)
+         {
+                  for(i=0;i<ncolumns-1;i++)
+                  {
+                     printf("\n\t|");
+                     strcpy(statement,columns[i]); 
+                     pch = strtok (statement,"-");
+                     while (pch != NULL)
+                     {
+                           printf("  %s",pch);
+                           str_spacing(pch,13);
+                           printf("|");
+                           pch = strtok (NULL,"-");
+                     }   
+                  }
+         }
+         else
+         {
+              printf("\n\nYeSQL : table is empty!!!!!          ");
+         }
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : table not available");
+     }
+}
+
+void select_display(char *table)
+{
+     char tablename[100];
+     char statement[100];
+     char head_line[500];
+     char head_line1[500];
+     char head_names[500];
+     FILE *tab;
+     int ncolumns,i,i9,i10;
+     char str[100],columns[100][100];
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     strcpy(tablename,"c:/YeSQl/");
+     strcat(tablename,usedatabase);
+     strcat(tablename,"/Schemas/");
+     strcat(tablename,table);
+     strcat(tablename,".txt");
+     if((tab=fopen(tablename,"r")))
+     {
+         ncolumns=0;
+        while(!feof(tab))
+         {
+             fscanf(tab,"%s",columns[ncolumns]);
+             ncolumns++;
+         }
+         fclose(tab);
+         if(ncolumns<=1)
+         {
+                        printf("\n\t\tSorry !!! empty table content!!!");
+                        return;
+         }
+         printf("\n\n");
+         strcpy(head_line,"\t ");
+         strcpy(head_line1,"\t|");
+         strcpy(head_names,"\t|");
+         for(i=0;i<ncolumns-1;i++)
+         {
+           
+            // printf("\t|");
+             strcat(head_line,"----------------");   
+             strcat(head_line1,"---------------|");
+             strcpy(statement,columns[i]); 
+             pch = strtok (statement,"-");
+             strcat(head_names,"   ");
+             strcat(head_names,pch);
+             i9=strlen(pch);
+             for(i10=0;i10<12-i9;i10++)
+             {
+             strcat(head_names," ");
+             }
+             strcat(head_names,"|");    
+         }
+         head_tb(table);
+        printf("\n\n%s",head_line);
+        printf("\n%s",head_names);
+        printf("\n%s",head_line1);
+        select_display_data(table);
+        printf("\n%s",head_line);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error : Table not available");
+     }
+}
+//EOF SELECT
+
+int checkoptimizedversion(char *statementaux)
+{
+    char path[100],str[500],statemnt[100];
+     int flag,i;
+     FILE *f;
+     char c;
+     strcpy(path,"c:/YeSQL/");
+     strcat(path,usedatabase);
+     strcat(path,"/optimizer.txt");
+    // printf("\n\n\t%s",path);
+    if(f=fopen(path,"r"))
+    {
+    }
+else
+{
+f=fopen(path,"w");
+fclose(f);
+return 0;
+}
+
+     flag=0;
+     i=0;
+     //c=fgetc(f);
+     //printf("\n%c",c);
+     while(!feof(f))
+     {          
+         //i=0;
+         c=fgetc(f);
+         if(c!='\n')
+         {
+             statemnt[i]=c;
+             i++;
+         }
+         else
+         {
+             statemnt[i]='\0';
+             //printf("\n\n\t%s",statemnt);
+             if(strcmp(statemnt,statementaux)==0)
+             {
+                 flag=1;
+                 break;
+             }
+             i=0;
+         }
+     }
+     fclose(f);
+     if(flag==1)
+     {
+         return 1;
+     }
+     return 0;
+}
+void optimization(char *statementaux)
+{
+     char path[100],str[500],statemnt[100];
+     int flag,i;
+     FILE *f;
+     char c;
+     strcpy(path,"c:/YeSQL/");
+     strcat(path,usedatabase);
+     strcat(path,"/optimizer.txt");
+     f=fopen(path,"a");
+     fclose(f);
+     f=fopen(path,"r");
+     flag=0;
+     i=0;
+     while(!feof(f))
+     {          
+         //i=0;
+         c=fgetc(f);
+         if(c!='\n')
+         {
+             statemnt[i]=c;
+             i++;
+         }
+         else
+         {
+             statemnt[i]='\0';
+             if(strcmp(statemnt,statementaux)==0)
+             {
+                 flag=1;
+                 break;
+             }
+             i=0;
+         }
+     }
+     fclose(f);
+     if(flag==0)
+     {
+         f=fopen(path,"a");
+         fprintf(f,"%s\n",statementaux);
+         fclose(f);
+     }
+     fclose(f);
+}
+int selectvalidate4(char *tablename,char columnnames[100][100],int ncols,char *cf, char *cv)
+{
+     char table[100],str[100],parts[100][100],tuple[500],tupleparts[100][100],str1[100];
+     FILE *f;
+     int noc,i,take[100],num,j,flag,k,nov,l1,l,i13,ln;
+     char *pch;
+     int conditionindex;
+     char retrievedtuple[100];
+     char allretrieved[100][100];
+     int retrievednumber=0;
+     char head_line[500];
+     char head_line1[500];
+     char head_col[500];
+     strcpy(head_line,"\n\t ");
+     strcpy(head_line1,"\n\t|");
+     strcpy(head_col,"\n\t|");
+     for(i=0;i<ncols;i++)
+     {
+            strcat(head_line,"----------------");
+            strcat(head_line1,"---------------|");
+            strcpy(str1,columnnames[i]);
+            l=strlen(str1);
+           strcat(head_col,"   ");
+            strcat(head_col,str1);
+            for(l1=0;l1<12-l;l1++)
+            {
+                  strcat(head_col," ");
+            }
+            strcat(head_col,"|");
+     
+     }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+         noc=0;
+         while(!feof(f))
+         {
+            fscanf(f,"%s",str);
+            pch = strtok (str,"-");
+            strcpy(parts[noc],pch);
+            noc++;
+         }
+         fclose(f);
+         noc--;
+         conditionindex=-1;
+         for(i=0;i<noc;i++)
+         {
+             if(strcmp(cf,parts[i])==0)
+             {
+                 conditionindex=i;
+                 break;
+             }
+         }
+         if(conditionindex==-1)
+         {
+             printf("\n\nYeSQL Error: Field not found: %s",cf);
+             return 0;
+         }
+     }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+         noc=0;
+         while(!feof(f))
+         {
+            fscanf(f,"%s",str);
+            pch = strtok (str,"-");
+            strcpy(parts[noc],pch);
+            noc++;
+         }
+         fclose(f);
+         noc--;
+     }
+     num=0;
+     for(i=0;i<ncols;i++)
+     {
+         flag=0;
+         for(j=0;j<noc;j++)
+         {
+              if(strcmp(columnnames[i],parts[j])==0)
+              {
+                   flag=1;
+                   break;
+              }
+         }
+         if(flag==0)
+         {
+              printf("\n\nYeSQL Error: Invalid column %s",columnnames[i]);
+              return 0;
+         }
+         else
+         {
+             take[num]=j;
+             num++;
+         }
+     }
+     head_tb(tablename);
+     printf("\n%s %s %s",head_line,head_col,head_line1);
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Data/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+         retrievednumber=0;
+         while(!feof(f))
+         {
+              nov=0;
+              fscanf(f,"%s",str);
+              pch = strtok (str,"-");
+              while (pch != NULL)
+              {
+                  strcpy(parts[nov],pch);
+                  nov++;
+                  pch = strtok (NULL, "-");
+              }
+              if(strcmp(parts[conditionindex],cv)==0)
+              {
+               for(i=0;i<num;i++)
+               {
+                    if(i==0)
+                     {
+                       strcpy(retrievedtuple,parts[take[i]]);
+                     }
+                     else
+                     {
+                      strcat(retrievedtuple,"-");
+                      strcat(retrievedtuple,parts[take[i]]);
+                     }
+               }
+               strcpy(allretrieved[retrievednumber],retrievedtuple);
+               retrievednumber++;
+              } 
+         }    
+         if(strcmp(allretrieved[retrievednumber-1],allretrieved[retrievednumber-2])==0)
+         {
+            retrievednumber--;
+         }
+      
+         fclose(f);
+         for(k=0;k<retrievednumber;k++)
+         {
+              //printf("\n\n%s",allretrieved[k]);
+              printf("\n\t|");
+                  pch = strtok (allretrieved[k],"-");
+                   while (pch != NULL)
+                   {
+                         ln=strlen(pch);
+                         printf("   %s",pch);
+                         for(i13=0;i13<12-ln;i13++)
+                         {
+                           printf(" ");
+                         }
+                         printf("|");
+                         nov++;
+                         pch = strtok (NULL, "-");
+                    
+                   }
+         }
+         printf("%s",head_line);
+     }
+     return 1;
+}
+int selectvalidate3(char *tablename,char *cf,char *cv)
+{     
+     char table[100],str[100],parts[100][100],tuple[500],tupleparts[100][100],column_name[100][100];
+     char head_line[500];
+     char head_line1[500];
+     char head_col[500];
+     char col_values[100][100];
+     FILE *f;
+     int noc,i,take[100],num,j,flag,k,nov,ln,i13;
+     char *pch;
+     if(database_exist(usedatabase)!=1)
+    {
+            printf("\n\nYeSQL Error : Specify the database name using 'use' command");
+            return;
+    }
+     int conditionindex;     
+     //printf("\n\nselectvalidate3 called");
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");     
+     strcpy(head_line,"\n\t ");
+     strcpy(head_line1,"\n\t|");
+     strcpy(head_col,"\n\t|");
+     
+     if(f=fopen(table,"r"))
+     {
+         noc=0;
+         while(!feof(f))
+         {
+            
+            //fscanf(f,"%s",str);
+            fscanf(f,"%s",column_name[noc]);
+            //printf("\n==============%s",str);
+            
+            noc++;
+         }
+         fclose(f);
+         if(noc<=1)
+         {
+                        printf("\n\n Sorry !!! empty table content!!!");
+                        return;
+         }
+         for(i=0;i<noc-1;i++)
+         {
+           strcat(head_line,"----------------");
+            strcat(head_line1,"---------------|");
+            strcpy(str,column_name[i]);
+            pch = strtok (str,"-");
+            strcpy(parts[i],pch);
+            strcat(head_col,"   ");
+            strcat(head_col,pch);
+            ln=strlen(pch);
+            for(i13=0;i13<12-ln;i13++)
+            {
+               strcat(head_col," ");
+            }
+            strcat(head_col,"|");                             
+         }
+         head_tb(tablename);
+         printf("\n%s %s %s",head_line,head_col,head_line1);
+         noc--;
+         conditionindex=-1;
+         for(i=0;i<noc;i++)
+         {
+             if(strcmp(cf,parts[i])==0)
+             {
+                 conditionindex=i;
+                 break;
+             }
+         }
+         if(conditionindex==-1)
+         {
+             printf("\n\nYeSQL Error: Field not found: %s",cf);
+             return;
+         }
+     }
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Data/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+          while(!feof(f))
+         {
+              nov=0;
+              fscanf(f,"%s",tuple);
+              strcpy(str,tuple);
+              pch = strtok (tuple,"-");
+              while (pch != NULL)
+              {
+                  strcpy(tupleparts[nov],pch);
+                  nov++;
+                  pch = strtok (NULL, "-");
+              }
+              if(strcmp(tupleparts[conditionindex],cv)==0)
+              {
+                  printf("\n\t|");
+                  pch = strtok (str,"-");
+                   while (pch != NULL)
+                   {
+                         ln=strlen(pch);
+                         printf("   %s",pch);
+                         for(i13=0;i13<12-ln;i13++)
+                         {
+                           printf(" ");
+                         }
+                         printf("|");
+                         nov++;
+                         pch = strtok (NULL, "-");
+                    
+                   }
+                  
+              }
+         }
+         printf("%s",head_line);
+         fclose(f);
+     }
+}
+   
+int selectvalidate2(char *tablename,char columnnames[100][100],int ncols)
+{
+     char table[100],str[100],parts[100][100],str1[200];
+     char retrievedtuple[100];
+     char allretrieved[100][100];
+     int retrievednumber;
+     FILE *f;
+     int noc,i,take[100],num,j,flag,k,nov,l,l1;
+     char *pch;
+      char head_line[500];
+     char head_line1[500];
+     char head_col[500];
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Schemas/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     strcpy(head_line,"\n\t ");
+     strcpy(head_line1,"\n\t|");
+     strcpy(head_col,"\n\t|");
+      for(i=0;i<ncols;i++)
+     {
+            strcat(head_line,"----------------");
+            strcat(head_line1,"---------------|");
+            strcpy(str1,columnnames[i]);
+            l=strlen(str1);
+           strcat(head_col,"   ");
+            strcat(head_col,str1);
+            for(l1=0;l1<12-l;l1++)
+            {
+                  strcat(head_col," ");
+            }
+            strcat(head_col,"|");
+     
+     } 
+     if(f=fopen(table,"r"))
+     {
+         noc=0;
+         while(!feof(f))
+         {
+            fscanf(f,"%s",str);
+            pch = strtok (str,"-");
+            strcpy(parts[noc],pch);
+            noc++;
+         }
+         fclose(f);
+         noc--;
+     }
+     num=0;
+     for(i=0;i<ncols;i++)
+     {
+         flag=0;
+         for(j=0;j<noc;j++)
+         {
+              if(strcmp(columnnames[i],parts[j])==0)
+              {
+                   flag=1;
+                   break;
+              }
+         }
+         if(flag==0)
+         {
+              printf("\n\nYeSQL Error: Invalid column %s",columnnames[i]);
+              return 0;
+         }
+         else
+         {
+             take[num]=j;
+             num++;
+         }
+     }
+     head_tb(tablename);
+      printf("\n%s %s %s",head_line,head_col,head_line1);
+        
+     strcpy(table,"c:/YeSQL/");
+     strcat(table,usedatabase);
+     strcat(table,"/Data/");
+     strcat(table,tablename);
+     strcat(table,".txt");
+     if(f=fopen(table,"r"))
+     {
+         retrievednumber=0;
+         while(!feof(f))
+         {
+              nov=0;
+              fscanf(f,"%s",str);
+              pch = strtok (str,"-");
+              while (pch != NULL)
+              {
+                  strcpy(parts[nov],pch);
+                  nov++;
+                  pch = strtok (NULL, "-");
+              }
+              for(i=0;i<num;i++)
+              {
+                 //printf("%s-",parts[take[i]]);
+                 if(i==0)
+                 {
+                     strcpy(retrievedtuple,parts[take[i]]);
+                     continue;
+                 }
+                 else
+                 {
+                     strcat(retrievedtuple,"-");
+                     strcat(retrievedtuple,parts[take[i]]);
+                 }
+                 //printf("%s",retrievedtuple);
+                 
+              }
+              strcpy(allretrieved[retrievednumber],retrievedtuple);
+              retrievednumber++;
+         }
+         fclose(f);
+         retrievednumber--;
+         for(i=0;i<retrievednumber;i++)
+         {
+            // printf("  %s\n",allretrieved[i]);
+             pch = strtok (allretrieved[i],"-");
+             strcpy(head_col,"\n\t|");
+              while (pch != NULL)
+              {
+                  strcpy(str1,pch);
+                  strcat(head_col,"   ");
+                  strcat(head_col,str1);
+                  l=strlen(str1);
+                  for(l1=0;l1<12-l;l1++)
+                  {
+                        strcat(head_col," ");
+                  }
+                  strcat(head_col,"|");
+                  pch = strtok (NULL, "-");
+              }
+              printf("%s",head_col);
+         }
+         printf("%s\n\n",head_line);
+     }
+     return 1;
+}
+int selectvalidate1(char *tablename)
+{
+     
+      select_display(tablename);
+}
+void preparetovalidate(char *statementaux)
+{
+     int r;
+     char tablename[10],statement[100],parts[100][100],columnnames[100][100],condition[100];
+     int j,i,nop,ncols,cs;
+     char *pch,conditionfield[100],conditionvalue[100];
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     if(nop==4)
+     {
+         if(strcmp(parts[1],"*")==0 || (parts[1][0]=='(' && parts[1][strlen(parts[1])-1]==')'))
+         {
+               strcpy(tablename,parts[3]);
+               i=0;
+               while(tablename[i]!='\0')
+               {
+                   if(tablename[i]==';')
+                   {
+                        tablename[i]='\0';
+                        break;
+                   }
+                   i++;
+               }
+         }
+         //printf("\n\n%s",tablename);
+         if(strcmp(parts[1],"*")==0)
+         {
+              r=0;
+              r=selectvalidate1(tablename);
+         }
+         else
+         {   
+             ncols=0;
+             pch = strtok (parts[1],",");
+             while (pch != NULL)
+             {
+                 strcpy(columnnames[ncols],pch);
+                 ncols++;
+                 pch = strtok (NULL, ",");
+             }
+             removeleadingcrap(columnnames[0]);
+             removetrailingcrap(columnnames[ncols-1]);
+             r=0;
+             r=selectvalidate2(tablename,columnnames,ncols);
+         }
+     }
+     else if(nop==6)
+     {
+         if(strcmp(parts[1],"*")==0 || (parts[1][0]=='(' && parts[1][strlen(parts[1])-1]==')'))
+         {
+               strcpy(tablename,parts[3]);
+               i=0;
+               while(tablename[i]!='\0')
+               {
+                   if(tablename[i]==';')
+                   {
+                        tablename[i]='\0';
+                        break;
+                   }
+                   i++;
+               }
+               strcpy(condition,parts[5]);
+               condition[strlen(condition)-1]='\0';
+               if(strcmp(parts[1],"*")==0)
+               {
+                   pch = strtok (condition,"=");
+                   nop=0;
+                   while (pch != NULL)
+                   {
+                         strcpy(parts[nop],pch);
+                         nop++;
+                         pch = strtok (NULL, "=");
+                   }
+                   strcpy(conditionfield,parts[0]);
+                   strcpy(conditionvalue,parts[1]);
+                   r=0;
+                   r=selectvalidate3(tablename,conditionfield,conditionvalue);
+               }
+               else
+               {
+                   //something,...
+                   //
+                   //
+                   //    
+                   ncols=0;
+                   pch = strtok (parts[1],",");
+                   while (pch != NULL)
+                   {
+                         strcpy(columnnames[ncols],pch);
+                         ncols++;
+                         pch = strtok (NULL, ",");
+                   }
+                   removeleadingcrap(columnnames[0]);
+                   removetrailingcrap(columnnames[ncols-1]);
+                   pch = strtok (condition,"=");
+                   nop=0;
+                   while (pch != NULL)
+                   {
+                         strcpy(parts[nop],pch);
+                         nop++;
+                         pch = strtok (NULL, "=");
+                   }
+                   strcpy(conditionfield,parts[0]);
+                   strcpy(conditionvalue,parts[1]);
+                   r=0;
+                   r=selectvalidate4(tablename,columnnames,ncols,conditionfield,conditionvalue);
+               }
+         }
+     }
+}
+void selectsyntax(char *statementaux)
+{
+     int r;
+     char tablename[10],statement[100],parts[100][100],columnnames[100][100],condition[100];
+     int j,i,nop,ncols,cs;
+     char *pch,conditionfield[100],conditionvalue[100];
+     
+     if(statementaux[strlen(statementaux)-1]!=';')
+     {
+          printf("\n\nYeSQL  Error : invalid termination.");
+          return;
+     }
+     strcpy(statement,statementaux);
+     pch = strtok (statement," ");
+     nop=0;
+     while (pch != NULL)
+     {
+       strcpy(parts[nop],pch);
+       nop++;
+       pch = strtok (NULL, " ");
+     }
+     if(nop==4)
+     {
+         if(strcmp(parts[1],"*")==0 || (parts[1][0]=='(' && parts[1][strlen(parts[1])-1]==')'))
+         {
+               if(strcmp(parts[2],"from")!=0)
+               {
+                    printf("\n\nYeSQL Error : 'from' keyword missing or misplaced");
+                    return;
+               }
+               strcpy(tablename,parts[3]);
+               i=0;
+               while(tablename[i]!='\0')
+               {
+                   if(tablename[i]==';')
+                   {
+                        tablename[i]='\0';
+                        break;
+                   }
+                   i++;
+               }
+         }
+         else
+         {
+             printf("\n\nYeSQL Error: Invalid synatx near %s",parts[1]);
+         }
+         
+         //printf("\n\n%s",tablename);
+         if(strcmp(parts[1],"*")==0)
+         {
+              r=selectvalidate1(tablename);
+              if(r==1)
+              {
+                  optimization(statementaux);
+              }
+         }
+         else
+         {
+             if(parts[1][1]==',' || parts[1][strlen(parts[1])-2]==',')
+             {
+                   printf("\n\nYeSQl Error: in column names");
+                   return;
+             }          
+             ncols=0;
+             pch = strtok (parts[1],",");
+             while (pch != NULL)
+             {
+                 strcpy(columnnames[ncols],pch);
+                 ncols++;
+                 pch = strtok (NULL, ",");
+             }
+             removeleadingcrap(columnnames[0]);
+             removetrailingcrap(columnnames[ncols-1]);
+             r=0;
+             r=selectvalidate2(tablename,columnnames,ncols);
+             if(r==1)
+              {
+                  optimization(statementaux);
+              }
+         }
+     }
+     else if(nop==6)
+     {
+         if(strcmp(parts[1],"*")==0 || (parts[1][0]=='(' && parts[1][strlen(parts[1])-1]==')'))
+         {
+               if(strcmp(parts[2],"from")!=0)
+               {
+                    printf("\n\nYeSQL Error: Keyword 'from' is missing or misplaced.");
+                    return;
+               }
+               strcpy(tablename,parts[3]);
+               i=0;
+               while(tablename[i]!='\0')
+               {
+                   if(tablename[i]==';')
+                   {
+                        tablename[i]='\0';
+                        break;
+                   }
+                   i++;
+               }
+               if(strcmp(parts[4],"where")!=0)
+               {
+                    printf("\n\nYeSQL Error: Unrecognized keyword!");
+                    return;
+               }
+               strcpy(condition,parts[5]);
+               condition[strlen(condition)-1]='\0';
+               if(strcmp(parts[1],"*")==0)
+               {
+                   pch = strtok (condition,"=");
+                   nop=0;
+                   while (pch != NULL)
+                   {
+                         strcpy(parts[nop],pch);
+                         nop++;
+                         pch = strtok (NULL, "=");
+                   }
+                   if(nop!=2)
+                   {
+                       printf("\n\nYeSQL Error: Error in condition");
+                       return;
+                   }
+                   strcpy(conditionfield,parts[0]);
+                   strcpy(conditionvalue,parts[1]);
+                   r=0;
+                   r=selectvalidate3(tablename,conditionfield,conditionvalue);
+                   if(r==1)
+                   {
+                      optimization(statementaux);
+                   }
+               }
+               else
+               {
+                   //something,...
+                   //
+                   //
+                   //
+                   if(parts[1][1]==',' || parts[1][strlen(parts[1])-2]==',')
+                   {
+                      printf("\n\nYeSQl Error: in column names");
+                      return;
+                   }          
+                   ncols=0;
+                   pch = strtok (parts[1],",");
+                   while (pch != NULL)
+                   {
+                         strcpy(columnnames[ncols],pch);
+                         ncols++;
+                         pch = strtok (NULL, ",");
+                   }
+                   removeleadingcrap(columnnames[0]);
+                   removetrailingcrap(columnnames[ncols-1]);
+                   pch = strtok (condition,"=");
+                   nop=0;
+                   while (pch != NULL)
+                   {
+                         strcpy(parts[nop],pch);
+                         nop++;
+                         pch = strtok (NULL, "=");
+                   }
+                   if(nop!=2)
+                   {
+                       printf("\n\nYeSQL Error: Error in condition");
+                       return;
+                   }
+                   strcpy(conditionfield,parts[0]);
+                   strcpy(conditionvalue,parts[1]);
+                   r=0;
+                   r=selectvalidate4(tablename,columnnames,ncols,conditionfield,conditionvalue);
+                   if(r==1)
+                   {
+                      optimization(statementaux);
+                   }
+               }
+         }
+         else
+         {
+             printf("\n\nYeSQL Error: Invalid synatx near %s",parts[1]);
+         }
+         
+         //printf("\n\n%s\t\t%s",tablename,condition);
+     }
+     else
+     {
+         printf("\n\nYeSQL Error: unrecognizable format.");
+     }
+}
+
+void head_tb(char *a)
+{
+     char s1[200];
+     char s2[200];
+     int ik;
+     strcpy(s1,"\n\n\n\tTable Name : ");
+     strcpy(s2,"\n\t=============");
+     strcat(s1,a);
+     for(ik=0;ik<strlen(a);ik++)
+     {
+        strcat(s2,"=");
+     } 
+     strcat(s1," ");
+     strcat(s2," ");
+     printf("%s %s",s1,s2);
+}
