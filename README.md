@@ -1,4 +1,10 @@
 # YeSQL- SQL Query Procesor Using C
+
+# How to run the application
+1. download the given Source code
+2. Download and install dev c++
+3. run the program from dev c++ GUI
+
 #
 following are the available operations with YesQL
 
